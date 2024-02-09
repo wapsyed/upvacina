@@ -94,20 +94,14 @@ write.csv(sipni_cobertura_municipios_1994_2023,
 Unir UF e municípios em uma tabela
 ```{r}
 sipni_cobertura_uf_1994_2023_2 = sipni_cobertura_uf_1994_2023 %>% 
-  mutate(mun_uf = "UF",
-         nome = uf)
+  mutate(mun_uf = "UF", nome = uf)
+
 sipni_cobertura_municipios_1994_2023_2 = sipni_cobertura_municipios_1994_2023 %>% 
- mutate(codigo = as.numeric(str_extract(municipio, "\\d+")),  # Extrair números
-        nome = str_remove(municipio, "\\d+ "),            # Extrair texto
-        mun_uf = "Município"
-  ) %>% 
+ mutate(codigo = as.numeric(str_extract(municipio, "\\d+")),# Extrair números
+        nome = str_remove(municipio, "\\d+ "),# Extrair texto
+        mun_uf = "Município" ) %>% 
   select(!"...1":municipio)
-
-
 sipni_all = bind_rows(sipni_cobertura_uf_1994_2023_2, sipni_cobertura_municipios_1994_2023_2)
-
 write.csv(sipni_all, file = "sipni_uf_mun_1994_2023.csv")
-
-
 ```
 
