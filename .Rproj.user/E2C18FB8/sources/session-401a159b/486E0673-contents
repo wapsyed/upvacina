@@ -10,6 +10,8 @@ library(here)
 library(readxl)
 library(janitor)
 library(stringi)
+devtools::install_github("tbrugz/ribge")
+library(ribge)
 ```
 
 # Unindo tabelas
@@ -130,7 +132,7 @@ dtb_municipios_cod = RELATORIO_DTB_BRASIL_MUNICIPIO %>%
 municipios = sipni_cobertura_municipios_1994_2023_2 %>% 
   mutate(nome = gsub("\\\\", "", nome)) %>% 
   left_join(dtb_municipios_cod, by = "nome") %>% 
-  select(nome, nome_municipio_original, uf, codigo = codigo.y, ano, imuno, cobertura, codigo_uf, mun_uf)
+  select(nome, nome_municipio_original, uf, codigo_municipio = codigo.y, ano, imuno, cobertura, codigo_uf, mun_uf)
 
 #Salvar
 saveRDS(municipios, file = "sipni_cobertura_municipios_1994_2023_2.rds")
@@ -140,4 +142,41 @@ saveRDS(municipios, file = "sipni_cobertura_municipios_1994_2023_2.rds")
 
 
 #Análise de dados
+Os dados das populações foram obtidos dos anos 2000 a 2022, pois os anos 2007 e 2023 não estavam disponíveis.
+
+```{r}
+
+# Obter população de municipios.
+anos = 2000:2023
+resultados = list()
+for (ano in anos) {
+  tryCatch({
+    # Chamar a função populacao_municipios para o ano atual e armazenar o resultado na lista
+    df_ano <- populacao_municipios(ano)
+    df_ano <- df_ano %>%
+      mutate_all(as.character)  # Convertendo todas as colunas para character
+    resultados[[as.character(ano)]] <- df_ano
+  }, error = function(e) {
+    # Tratar o erro (por exemplo, imprimir uma mensagem)
+    print(paste("Erro para o ano", ano, ":", conditionMessage(e)))
+  })
+}
+
+# Combinar todos os dataframes em um único dataframe
+populacao_municipios_2000_2022 <- bind_rows(resultados, .id = "ano") %>% 
+  select(uf_abrev = uf, 
+         nome_municipio_original = nome_munic,
+         ano, codigo_uf, 
+         populacao, 
+         codigo_municipio = cod_municipio)
+print(populacao_municipios_2000_2022)
+
+
+municipios_2 = municipios %>% 
+  left_join(populacao_municipios_2000_2022,
+            by = join_by("codigo_municipio", ano))
+
+
+```
+
 
