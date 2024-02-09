@@ -9,6 +9,7 @@ library(tidyverse)
 library(here)
 library(readxl)
 library(janitor)
+library(stringi)
 ```
 
 # Unindo tabelas
@@ -54,7 +55,6 @@ write.csv(sipni_cobertura_uf_1994_2023, file = "sipni_cobertura_uf_1994_2023.csv
 
 Dados de municípios
 ```{r}
-
 #Listar tabelas
 lista_MU_cobertura = list.files() 
 arquivos_xlsx <- list.files(here(), pattern = "\\.xlsx$", full.names = F)
@@ -87,21 +87,55 @@ sipni_cobertura_municipios_1994_2023 <- lapply(arquivos_xlsx, read_xl_sipni_muni
 #Salvar
 write.csv(sipni_cobertura_municipios_1994_2023, 
           file = "sipni_cobertura_municipios_1994_2023.csv")
-
 ```
 
-
-Unir UF e municípios em uma tabela
+# Processamento de dados
 ```{r}
+#Estados
 sipni_cobertura_uf_1994_2023_2 = sipni_cobertura_uf_1994_2023 %>% 
-  mutate(mun_uf = "UF", nome = uf)
+  mutate(mun_uf = "UF", 
+         nome = uf,
+         nome =  toupper(nome),
+         nome = stri_trans_general(nome, "Latin-ASCII")) %>% 
+  select(nome, uf, ano, imuno, cobertura, mun_uf)
 
+#Municípios
 sipni_cobertura_municipios_1994_2023_2 = sipni_cobertura_municipios_1994_2023 %>% 
- mutate(codigo = as.numeric(str_extract(municipio, "\\d+")),# Extrair números
+ mutate(codigo = as.character(str_extract(municipio, "\\d+")),# Extrair números
         nome = str_remove(municipio, "\\d+ "),# Extrair texto
         mun_uf = "Município" ) %>% 
   select(!"...1":municipio)
-sipni_all = bind_rows(sipni_cobertura_uf_1994_2023_2, sipni_cobertura_municipios_1994_2023_2)
-write.csv(sipni_all, file = "sipni_uf_mun_1994_2023.csv")
+
+# #Unir
+# sipni_all = bind_rows(sipni_cobertura_uf_1994_2023_2, sipni_cobertura_municipios_1994_2023_2)
+# write.csv(sipni_all, file = "sipni_uf_mun_1994_2023.csv")
+
 ```
+
+
+#Anotar municipios e estados 
+
+```{r}
+#Anotações de cidades. Fonte: IBGE. https://www.ibge.gov.br/explica/codigos-dos-municipios.php
+dtb_municipios_cod = RELATORIO_DTB_BRASIL_MUNICIPIO %>% 
+  clean_names() %>% 
+  select(codigo_uf = uf, uf = nome_uf, codigo = codigo_municipio_completo, nome_municipio) %>% 
+  mutate(nome_municipio_original = nome_municipio,
+         nome =  toupper(nome_municipio_original),
+         nome = stri_trans_general(nome, "Latin-ASCII")) %>% 
+  select(-nome_municipio)
+
+municipios = sipni_cobertura_municipios_1994_2023_2 %>% 
+  mutate(nome = gsub("\\\\", "", nome)) %>% 
+  left_join(dtb_municipios_cod, by = "nome") %>% 
+  select(nome, nome_municipio_original, uf, codigo = codigo.y, ano, imuno, cobertura, codigo_uf, mun_uf)
+
+#Salvar
+saveRDS(municipios, file = "sipni_cobertura_municipios_1994_2023.rds")
+  
+
+```
+
+
+#Análise de dados
 
