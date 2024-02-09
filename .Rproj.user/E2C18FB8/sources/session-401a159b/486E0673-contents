@@ -146,6 +146,7 @@ saveRDS(municipios, file = "sipni_cobertura_municipios_1994_2023_2.rds")
 Os dados das populações foram obtidos dos anos 2000 a 2022, pois os anos 2007 e 2023 não estavam disponíveis.
 Definir variáveis
 - https://www.ibge.gov.br/estatisticas/downloads-estatisticas.html 
+- Censos
 - Perfil Estados
 - Perfil Municipios
 - Economicos
@@ -155,7 +156,22 @@ Definir variáveis
 - Acesso à internet
 - Educação
 - Saúde
-- Censo
+
+```{r}
+install.packages("basedosdados")
+library("basedosdados")
+
+# Para carregar o dado direto no R
+query <- bdplyr("br_ibge_censo_demografico.microdados_domicilio_1970")
+df <- bd_collect(query)
+
+
+install.packages("bdplyr")
+query <- bdplyr("br_ms_atencao_basica.municipio")
+df <- bd_collect(query)
+
+```
+
 
 ```{r}
 # População ---- 

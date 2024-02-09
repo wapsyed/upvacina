@@ -1,0 +1,9 @@
+"0","# Para carregar o dado direto no R
+query <- bdplyr(""br_ibge_censo_demografico.microdados_domicilio_1970"")
+"
+"2","No Billing Project Id set. You can set it as an enviroment variable under billing_project_id and restart the session or run basedosdados::set_billing_id."
+"1","[1m[33mError[39m in `bdplyr()`:[22m
+[33m![39m You haven't set a Project Billing Id. Use the function `set_billing_id` to do so.
+Backtrace:
+[90m 1. [39m[1m[94mbasedosdados::bdplyr([39m[22m""br_ibge_censo_demografico.microdados_domicilio_1970""[1m[94m)[39m[22m
+"
