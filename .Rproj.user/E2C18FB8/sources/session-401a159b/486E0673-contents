@@ -110,6 +110,8 @@ sipni_cobertura_municipios_1994_2023_2 = sipni_cobertura_municipios_1994_2023 %>
         mun_uf = "Município" ) %>% 
   select(!"...1":municipio)
 
+glimpse(sipni_cobertura_municipios_1994_2023_2)
+
 # #Unir
 # sipni_all = bind_rows(sipni_cobertura_uf_1994_2023_2, sipni_cobertura_municipios_1994_2023_2)
 # write.csv(sipni_all, file = "sipni_uf_mun_1994_2023.csv")
@@ -137,14 +139,26 @@ municipios = sipni_cobertura_municipios_1994_2023_2 %>%
 #Salvar
 saveRDS(municipios, file = "sipni_cobertura_municipios_1994_2023_2.rds")
   
-
 ```
 
 
 #Análise de dados
 Os dados das populações foram obtidos dos anos 2000 a 2022, pois os anos 2007 e 2023 não estavam disponíveis.
+Definir variáveis
+- https://www.ibge.gov.br/estatisticas/downloads-estatisticas.html 
+- Perfil Estados
+- Perfil Municipios
+- Economicos
+- Indicadores sociais
+- Educacação e qualificação profissional
+- Economia de saúde
+- Acesso à internet
+- Educação
+- Saúde
+- Censo
 
 ```{r}
+# População ---- 
 
 # Obter população de municipios.
 anos = 2000:2023
@@ -168,13 +182,52 @@ populacao_municipios_2000_2022 <- bind_rows(resultados, .id = "ano") %>%
          nome_municipio_original = nome_munic,
          ano, codigo_uf, 
          populacao, 
-         codigo_municipio = cod_municipio)
+         codigo_municipio = cod_municipio) %>% 
+  mutate(ano = as.numeric(ano),
+         populacao = as.numeric(populacao))
+  
 print(populacao_municipios_2000_2022)
 
 
+# GDP ----
+
+anos = 1999:2020
+pib_municipios(ano = 2003)
+
+resultados = list()
+for (ano in anos) {
+  tryCatch({
+    df_ano <- pib_municipios(ano = ano, dir=".")
+    resultados[[ano]] <- df_ano
+  }, error = function(e) {
+    print(paste("Erro para o ano", ano, ":", conditionMessage(e)))
+  })
+}
+
+# Combinar todos os dataframes em um único dataframe
+populacao_municipios_2000_2022 <- bind_rows(resultados, .id = "ano") %>% 
+  select(uf_abrev = uf, 
+         nome_municipio_original = nome_munic,
+         ano, codigo_uf, 
+         populacao, 
+         codigo_municipio = cod_municipio) %>% 
+  mutate(ano = as.numeric(ano),
+         populacao = as.numeric(populacao))
+  
+print(populacao_municipios_2000_2022)
+```
+
+
+
+
+```{r}
+#Unir dados
+
 municipios_2 = municipios %>% 
-  left_join(populacao_municipios_2000_2022,
-            by = join_by("codigo_municipio", ano))
+ left_join(populacao_municipios_2000_2022 %>% 
+             select(codigo_municipio, ano, populacao),
+            by = c("codigo_municipio", "ano"))
+
 
 
 ```

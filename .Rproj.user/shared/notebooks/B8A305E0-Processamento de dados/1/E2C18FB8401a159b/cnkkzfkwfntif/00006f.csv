@@ -1,6 +1,0 @@
-"0","municipios = sipni_cobertura_municipios_1994_2023_2 %>% 
-  mutate(nome = gsub(""\\\\"", """", nome)) %>% 
-  left_join(dtb_municipios_cod, by = ""nome"") %>% 
-  select(nome, nome_municipio_original, uf, codigo_municipio = codigo.y, ano, imuno, cobertura, codigo_uf, mun_uf)
-"
-"2","Warning: Detected an unexpected many-to-many relationship between `x` and `y`."
