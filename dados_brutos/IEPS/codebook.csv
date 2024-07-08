@@ -1,0 +1,189 @@
+Variavel;Nome dos Indicadores;Abreviações;Bloco;Fonte
+cob_ab;Cobertura da Atenção Básica (%);Cobertura AB (%);Atenção Primária;e-Gestor
+cob_acs;Cobertura de Agentes Comunitários de Saúde (%);Cobertura ACS (%);Atenção Primária;e-Gestor
+cob_esf;Cobertura de Estratégia de Saúde da Família (%);Cobertura ESF (%);Atenção Primária;e-Gestor
+cob_vac_bcg;Cobertura Vacinal de BCG (%);Cob. Vacinal BCG;Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_rota;Cobertura Vacinal de Rotavírus Humano (%);Cob. Vacinal Rotavírus Humano;Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_menin;Cobertura Vacinal de Meningococo C (%);Cob. Vacinal Meningococo C;Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_pneumo;Cobertura Vacinal de Pneumocócica (%);Cob. Vacinal Pneumocócica;Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_polio;Cobertura Vacinal de Poliomielite (%);Cob. Vacinal Poliomielite;Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_tvd1;Cobertura Vacinal de Tríplice Viral (1ª Dose) (%);Cob. Vacinal Tríplice Viral D1;Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_penta;Cobertura Vacinal de Pentavalente (%);Cob. Vacinal Pentavalente;Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_hepb;Cobertura Vacinal de Hepatite B em crianças até 30 dias (%);Cob. Vacinal Hepatite B (Crianças até 30d);Atenção Primária;PNI, TabNet/DATASUS
+cob_vac_hepa;Cobertura Vacinal de Hepatite A (%);Cob. Vacinal Hepatite A;Atenção Primária;PNI, TabNet/DATASUS
+pct_prenatal_adeq;Nascidos Vivos com Pré-Natal Adequado (%);Pré-Natal Adequado (%);Atenção Primária;SINASC
+pct_prenatal_zero;Nascidos Vivos com Nenhuma Consulta Pré-Natal (%);Nenhuma Consulta Pré-Natal (%);Atenção Primária;SINASC
+pct_prenatal_1a6;Nascidos Vivos com 1 a 6 Consultas Pré-Natal (%);Consultas Pré-Natal: 1 a 6 (%);Atenção Primária;SINASC
+pct_prenatal_7m;Nascidos Vivos com 7 ou Mais Consultas Pré-Natal (%);Consultas Pré-Natal: 7+ (%);Atenção Primária;SINASC
+tx_mort_inf_ibge;Mortalidade Infantil (por 1.000 Nascidos Vivos, Média Trienal);Mortalidade Infantil (Por 1.000 NVs);Mortalidade & Morbidade;SIM
+n_obitos;Número de Óbitos por Todas as Causas;N. Óbitos;Mortalidade & Morbidade;SIM
+n_obitos_csap;Número de Óbitos por Condições Sensíveis a Atenção Primária;N. Óbitos CSAP;Mortalidade & Morbidade;SIM
+n_obitos_evit;Número de Óbitos por Causas Evitáveis;N. Óbitos Causas Evitáveis;Mortalidade & Morbidade;SIM
+n_obitos_maldef;Número de Óbitos por Causas Mal Definidas;N. Óbitos por Causas Mal Definidas;Mortalidade & Morbidade;SIM
+tx_mort;Mortalidade Bruta (por 100.000 Hab.);Mortalidade Bruta;Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_csap;Mortalidade Bruta por Condições Sensíveis a Atenção Primária (por 100.000 Hab.);Mortalidade Bruta CSAP;Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_evit;Mortalidade Bruta por Causas Evitáveis (por 100.000 Hab.);Mortalidade Bruta Causas Evitáveis;Mortalidade & Morbidade;SIM, TabNet/DATASUS
+pct_mort_maldef;Mortalidade Bruta por Causas Mal Definidas (%);Mortalidade Bruta Causas Mal Definidas;Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_aj_oms;Mortalidade Ajustada (OMS, por 100.000 Hab.);Mortalidade Ajust. (OMS);Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_csap_aj_oms;Mortalidade Ajustada por Condições Sensíveis à Atenção Primária (OMS, por 100.000 Hab.);Mortalidade Ajust. CSAP (OMS);Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_evit_aj_oms;Mortalidade Ajustada por Causas Evitáveis (OMS, por 100.000 Hab.);Mortalidade Ajust. Causas Evitáveis (OMS);Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_aj_cens;Mortalidade Ajustada (Censo 2010, por 100.000 Hab.);Mortalidade Ajust. (Censo);Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_csap_aj_cens;Mortalidade Ajustada por Condições Sensíveis à Atenção Primária (Censo, por 100.000 Hab.);Mortalidade Ajust. CSAP (Censo);Mortalidade & Morbidade;SIM, TabNet/DATASUS
+tx_mort_evit_aj_cens;Mortalidade Ajustada por Causas Evitáveis (Censo, por 100.000 Hab.);Mortalidade Ajust.Causas Evitáveis (Censo);Mortalidade & Morbidade;SIM, TabNet/DATASUS
+n_hosp;Número de Hospitalizações Totais;N. Hospitalizações;Mortalidade & Morbidade;SIM, TabNet/DATASUS
+n_hosp_csap;Número de Hospitalizações por Condições Sensíveis à Atenção Primária;N. Hospitalizações CSAP;Mortalidade & Morbidade;SIH, TabNet/DATASUS
+tx_hosp;Hospitalizações (por 100.000 Hab.);Hospitalizações (Por 100.000 Hab.);Mortalidade & Morbidade;SIH, TabNet/DATASUS
+tx_hosp_csap;Hospitalizações por Condições Sensíveis à Atenção Primária (por 100.000 Hab.);Hospitalizações CSAP (Por 100.000 Hab.);Mortalidade & Morbidade;SIH, TabNet/DATASUS
+n_leitouti_sus;Número de Leitos de UTI SUS;N. Leitos de UTI SUS;Recursos;CNES
+n_leito_sus;Número de Leitos SUS;N. Leitos SUS;Recursos;CNES
+tx_leito_sus;Leitos SUS (por 100.000 Hab.);Leitos SUS (Por 100.000 Hab.);Recursos;CNES, TabNet/DATASUS
+tx_leitouti_sus;Leitos de UTI SUS (por 100.000 Hab.);Leitos de UTI SUS (Por 100.000 Hab.);Recursos;CNES, TabNet/DATASUS
+n_enf;Número de Enfermeiros;N. Enfermeiros;Recursos;CNES
+n_med;Número de Médicos;N. Médicos;Recursos;CNES
+n_enf_ch;Número de Enfermeiros (Padronizados por Carga Horária);Enfermeiros (Por C.H.);Recursos;CNES
+n_med_ch;Número de Médicos (Padronizados por Carga Horária);Médicos (Por C.H.);Recursos;CNES
+tx_med;Médicos (por 1.000 Hab.);Médicos (Por 1.000 Hab.);Recursos;CNES, TabNet/DATASUS
+tx_enf;Enfermeiros (por 1.000 Hab.);Enfermeiros (Por 1.000 Hab.);Recursos;CNES, TabNet/DATASUS
+tx_med_ch;Médicos (Padronizados por Carga Horária, por 1.000 Hab.);Médicos (Por C.H., 1.000 Hab.);Recursos;CNES, TabNet/DATASUS
+tx_enf_ch;Enfermeiros (Padronizados por Carga Horária, por 1.000 Hab.);Enfermeiros (Por C.H., 1.000 Hab.);Recursos;CNES, TabNet/DATASUS
+n_leito_nsus;Número de Leitos Não-SUS;N. Leitos Não-SUS;Saúde Suplementar;CNES
+n_leitouti_nsus;Número de Leitos de UTI Não-SUS;N. Leitos de UTI Não-SUS;Saúde Suplementar;CNES
+tx_leito_nsus;Leitos Não-SUS (por 100.000 Hab.);Leitos Não-SUS (Por 100.000 Hab.);Saúde Suplementar;CNES
+tx_leitouti_nsus;Leitos de UTI Não-SUS (por 100.000 Hab.);Leitos de UTI Não-SUS (Por 100.000 Hab.);Saúde Suplementar;CNES
+cob_priv;Cobertura de Planos de Saúde (%);Cobertura de Planos de Saúde (%);Saúde Suplementar;ANS
+pct_desp_recp_saude_mun;Participação da Receita Própria Municipal Aplicada em Saúde - EC 29 (%);% da Receita Própria Municipal Aplicada em Saúde;Gastos;SIOPS
+desp_tot_saude_pc_mun;Despesa Total com Saúde Sob Responsabilidade do Município (por Hab., R$);Despesa Total do Município com Saúde (por Hab.);Gastos;SIOPS
+desp_recp_saude_pc_mun;Despesa em Saúde Utilizando Recursos Próprios do Município (por Hab., R$);Despesa em Saúde com Rec. Próprios do Município (por Hab.);Gastos;SIOPS
+pct_desp_recp_saude_uf;Participação da Receita Própria Estadual Aplicada em Saúde - EC 29 (%);% da Receita Própria Estadual Aplicada em Saúde;Gastos;SIOPS
+desp_tot_saude_pc_uf;Despesa Total com Saúde Sob Responsabilidade do Estado (por Hab., R$);Despesa Total do Estado com Saúde (Por Hab.);Gastos;SIOPS
+desp_recp_saude_pc_uf;Despesa em Saúde Utilizando Recursos Próprios do Estado (por Hab., R$);Despesa em Saúde com Rec. Próprios do Estado (Por Hab.);Gastos;SIOPS
+desp_tot_saude_pc_mun_def;Despesa Total com Saúde Sob Responsabilidade do Município (por Hab., R$ de 2021);Despesa Total do Município com Saúde (por Hab., Const.);Gastos;SIOPS
+desp_recp_saude_pc_mun_def;Despesa em Saúde Utilizando Recursos Próprios do Município (por Hab., R$ de 2021);Despesa em Saúde com Rec. Próprios do Município (por Hab., Const.);Gastos;SIOPS
+desp_tot_saude_pc_uf_def;Despesa Total com Saúde Sob Responsabilidade do Estado (por Hab., R$ de 2021);Despesa Total do Estado com Saúde (Por Hab., Const.);Gastos;SIOPS
+desp_recp_saude_pc_uf_def;Despesa em Saúde Utilizando Recursos Próprios do Estado (por Hab., R$ de 2021);Despesa em Saúde com Rec. Próprios do Estado (Por Hab., Const.);Gastos;SIOPS
+ideb_5ano;Índice de Desenvolvimento da Atenção Básica (5º Ano);IDEB (5º Ano);Indicadores Socioeconômicos;Inep
+ideb_9ano;Índice de Desenvolvimento da Atenção Básica (9º Ano);IDEB (9º Ano);Indicadores Socioeconômicos;Inep
+pib_cte_pc;Produto Interno Bruto Per Capita Real do Município (R$, valores de 2018);PIB P.C. Mun. Real;Indicadores Socioeconômicos;SIDRA
+num_familias_bf;Número de famílias beneficiárias do bolsa família;Beneficiários do Bolsa Família;Indicadores Socioeconômicos;MDS
+gasto_pbf_pc_def;Gasto com o Programa Bolsa Família (por Hab., R$ de 2021);Gasto com o PBF (por Hab., Const.);Indicadores Socioeconômicos;MDS
+idhm;Índice de Desenvolvimento Humano Municipal (2010);IDHM (2010);Indicadores Socioeconômicos;Atlas Brasil
+idhm_renda;Índice de Desenvolvimento Humano Municipal - Dimensão Renda (2010);IDHM - Renda (2010);Indicadores Socioeconômicos;Atlas Brasil
+idhm_educ;Índice de Desenvolvimento Humano Municipal - Dimensão Educação (2010);IDHM - Educação (2010);Indicadores Socioeconômicos;Atlas Brasil
+idhm_long;Índice de Desenvolvimento Humano Municipal - Dimensão Longevidade (2010);IDHM - Longevidade (2010);Indicadores Socioeconômicos;Atlas Brasil
+renda_dom_pc;Renda Domiciliar Média per Capita (Censo 2010);Renda Domiciliar Média P.C.;Indicadores Socioeconômicos;Censo
+exp_vida;Expectativa de Vida ao Nascer (Censo 2010);Expectativa de Vida ao Nascer;Indicadores Socioeconômicos;Censo
+pct_san_adeq;Saneamento Básico Adequado (Censo 2010, %);Saneamento Básico Adequado (%);Indicadores Socioeconômicos;Censo
+pct_rural;Residentes em Área Rural (Censo 2010, %);Residentes em Área Rural (%);Demografia;Censo
+pct_pop65m;População Acima de 65 Anos (%);População 65+ (%);Demografia;TabNet DATASUS
+pct_pop75m;População Acima de 75 Anos (%);População 75+ (%);Demografia;TabNet DATASUS
+pct_pop0a4;População de 0 a 4 Anos (%);População 0-4 (%);Demografia;TabNet DATASUS
+pct_pop5a14;População de 5 a 14 Anos (%);População 5-14 (%);Demografia;TabNet DATASUS
+pct_pop15a64;População em Idade Ativa (15-64 anos, %);População em Idade Ativa (%);Demografia;TabNet DATASUS
+pct_pop10a49_fem;Mulheres em Idade Fértil (10-49 anos, %);Mulheres em Idade Fértil (%);Demografia;TabNet DATASUS
+tx_popmf;Razão de Sexos;Razão de Sexos;Demografia;TabNet DATASUS
+pop;População Total;População Total;Demografia;TabNet DATASUS
+pop0a4;População de 0 a 4 anos;;Demografia;TabNet DATASUS
+pop5a9;População de 5 a 9 anos;;Demografia;TabNet DATASUS
+pop10a14;População de 10 a 14 anos;;Demografia;TabNet DATASUS
+pop15a19;População de 15 a 19 anos;;Demografia;TabNet DATASUS
+pop20a24;População de 20 a 24 anos;;Demografia;TabNet DATASUS
+pop25a29;População de 25 a 29 anos;;Demografia;TabNet DATASUS
+pop30a34;População de 30 a 34 anos;;Demografia;TabNet DATASUS
+pop35a39;População de 35 a 39 anos;;Demografia;TabNet DATASUS
+pop40a44;População de 40 a 44 anos;;Demografia;TabNet DATASUS
+pop45a49;População de 45 a 49 anos;;Demografia;TabNet DATASUS
+pop50a54;População de 50 a 54 anos;;Demografia;TabNet DATASUS
+pop55a59;População de 55 a 59 anos;;Demografia;TabNet DATASUS
+pop60a64;População de 60 a 64 anos;;Demografia;TabNet DATASUS
+pop65a69;População de 65 a 69 anos;;Demografia;TabNet DATASUS
+pop70a74;População de 70 a 74 anos;;Demografia;TabNet DATASUS
+pop75a79;População de 75 a 79 anos;;Demografia;TabNet DATASUS
+pop80m;População acima de 80 anos;;Demografia;TabNet DATASUS
+pop0a4_fem;População de Mulheres de 0 a 4 anos;;Demografia;TabNet DATASUS
+pop5a9_fem;População de Mulheres de 5 a 9 anos;;Demografia;TabNet DATASUS
+pop10a14_fem;População de Mulheres de 10 a 14 anos;;Demografia;TabNet DATASUS
+pop15a19_fem;População de Mulheres de 15 a 19 anos;;Demografia;TabNet DATASUS
+pop20a24_fem;População de Mulheres de 20 a 24 anos;;Demografia;TabNet DATASUS
+pop25a29_fem;População de Mulheres de 25 a 29 anos;;Demografia;TabNet DATASUS
+pop30a34_fem;População de Mulheres de 30 a 34 anos;;Demografia;TabNet DATASUS
+pop35a39_fem;População de Mulheres de 35 a 39 anos;;Demografia;TabNet DATASUS
+pop40a44_fem;População de Mulheres de 40 a 44 anos;;Demografia;TabNet DATASUS
+pop45a49_fem;População de Mulheres de 45 a 49 anos;;Demografia;TabNet DATASUS
+pop50a54_fem;População de Mulheres de 50 a 54 anos;;Demografia;TabNet DATASUS
+pop55a59_fem;População de Mulheres de 55 a 59 anos;;Demografia;TabNet DATASUS
+pop60a64_fem;População de Mulheres de 60 a 64 anos;;Demografia;TabNet DATASUS
+pop65a69_fem;População de Mulheres de 65 a 69 anos;;Demografia;TabNet DATASUS
+pop70a74_fem;População de Mulheres de 70 a 74 anos;;Demografia;TabNet DATASUS
+pop75a79_fem;População de Mulheres de 75 a 79 anos;;Demografia;TabNet DATASUS
+pop80m_fem;População de Mulheres acima de 80 anos;;Demografia;TabNet DATASUS
+pop_fem;População de Mulheres;;Demografia;TabNet DATASUS
+pop0a4_masc;População de Homens de 0 a 4 anos;;Demografia;TabNet DATASUS
+pop5a9_masc;População de Homens de 5 a 9 anos;;Demografia;TabNet DATASUS
+pop10a14_masc;População de Homens de 10 a 14 anos;;Demografia;TabNet DATASUS
+pop15a19_masc;População de Homens de 15 a 19 anos;;Demografia;TabNet DATASUS
+pop20a24_masc;População de Homens de 20 a 24 anos;;Demografia;TabNet DATASUS
+pop25a29_masc;População de Homens de 25 a 29 anos;;Demografia;TabNet DATASUS
+pop30a34_masc;População de Homens de 30 a 34 anos;;Demografia;TabNet DATASUS
+pop35a39_masc;População de Homens de 35 a 39 anos;;Demografia;TabNet DATASUS
+pop40a44_masc;População de Homens de 40 a 44 anos;;Demografia;TabNet DATASUS
+pop45a49_masc;População de Homens de 45 a 49 anos;;Demografia;TabNet DATASUS
+pop50a54_masc;População de Homens de 50 a 54 anos;;Demografia;TabNet DATASUS
+pop55a59_masc;População de Homens de 55 a 59 anos;;Demografia;TabNet DATASUS
+pop60a64_masc;População de Homens de 60 a 64 anos;;Demografia;TabNet DATASUS
+pop65a69_masc;População de Homens de 65 a 69 anos;;Demografia;TabNet DATASUS
+pop70a74_masc;População de Homens de 70 a 74 anos;;Demografia;TabNet DATASUS
+pop75a79_masc;População de Homens de 75 a 79 anos;;Demografia;TabNet DATASUS
+pop80m_masc;População de Homens acima de 80 anos;;Demografia;TabNet DATASUS
+pop_masc;População de Homens;;Demografia;TabNet DATASUS
+pct_pop5a9;Percentual da População de 5 a 9 anos;;Demografia;TabNet DATASUS
+pct_pop10a14;Percentual da População de 10 a 14 anos;;Demografia;TabNet DATASUS
+pct_pop15a19;Percentual da População de 15 a 19 anos;;Demografia;TabNet DATASUS
+pct_pop20a24;Percentual da População de 20 a 24 anos;;Demografia;TabNet DATASUS
+pct_pop25a29;Percentual da População de 25 a 29 anos;;Demografia;TabNet DATASUS
+pct_pop30a34;Percentual da População de 30 a 34 anos;;Demografia;TabNet DATASUS
+pct_pop35a39;Percentual da População de 35 a 39 anos;;Demografia;TabNet DATASUS
+pct_pop40a44;Percentual da População de 40 a 44 anos;;Demografia;TabNet DATASUS
+pct_pop45a49;Percentual da População de 45 a 49 anos;;Demografia;TabNet DATASUS
+pct_pop50a54;Percentual da População de 50 a 54 anos;;Demografia;TabNet DATASUS
+pct_pop55a59;Percentual da População de 55 a 59 anos;;Demografia;TabNet DATASUS
+pct_pop60a64;Percentual da População de 60 a 64 anos;;Demografia;TabNet DATASUS
+pct_pop65a69;Percentual da População de 65 a 69 anos;;Demografia;TabNet DATASUS
+pct_pop70a74;Percentual da População de 70 a 74 anos;;Demografia;TabNet DATASUS
+pct_pop75a79;Percentual da População de 75 a 79 anos;;Demografia;TabNet DATASUS
+pct_pop80m;Percentual da População acima de 80 anos;;Demografia;TabNet DATASUS
+pct_pop0a4_fem;Percentual de Mulheres de 0 a 4 anos;;Demografia;TabNet DATASUS
+pct_pop5a9_fem;Percentual de Mulheres de 5 a 9 anos;;Demografia;TabNet DATASUS
+pct_pop10a14_fem;Percentual de Mulheres de 10 a 14 anos;;Demografia;TabNet DATASUS
+pct_pop15a19_fem;Percentual de Mulheres de 15 a 19 anos;;Demografia;TabNet DATASUS
+pct_pop20a24_fem;Percentual de Mulheres de 20 a 24 anos;;Demografia;TabNet DATASUS
+pct_pop25a29_fem;Percentual de Mulheres de 25 a 29 anos;;Demografia;TabNet DATASUS
+pct_pop30a34_fem;Percentual de Mulheres de 30 a 34 anos;;Demografia;TabNet DATASUS
+pct_pop35a39_fem;Percentual de Mulheres de 35 a 39 anos;;Demografia;TabNet DATASUS
+pct_pop40a44_fem;Percentual de Mulheres de 40 a 44 anos;;Demografia;TabNet DATASUS
+pct_pop45a49_fem;Percentual de Mulheres de 45 a 49 anos;;Demografia;TabNet DATASUS
+pct_pop50a54_fem;Percentual de Mulheres de 50 a 54 anos;;Demografia;TabNet DATASUS
+pct_pop55a59_fem;Percentual de Mulheres de 55 a 59 anos;;Demografia;TabNet DATASUS
+pct_pop60a64_fem;Percentual de Mulheres de 60 a 64 anos;;Demografia;TabNet DATASUS
+pct_pop65a69_fem;Percentual de Mulheres de 65 a 69 anos;;Demografia;TabNet DATASUS
+pct_pop70a74_fem;Percentual de Mulheres de 70 a 74 anos;;Demografia;TabNet DATASUS
+pct_pop75a79_fem;Percentual de Mulheres de 75 a 79 anos;;Demografia;TabNet DATASUS
+pct_pop80m_fem;Percentual de Mulheres acima de 80 anos;;Demografia;TabNet DATASUS
+pct_pop_fem;Percentual de Mulheres;;Demografia;TabNet DATASUS
+pct_pop0a4_masc;Percentual de Homens de 0 a 4 anos;;Demografia;TabNet DATASUS
+pct_pop5a9_masc;Percentual de Homens de 5 a 9 anos;;Demografia;TabNet DATASUS
+pct_pop10a14_masc;Percentual de Homens de 10 a 14 anos;;Demografia;TabNet DATASUS
+pct_pop15a19_masc;Percentual de Homens de 15 a 19 anos;;Demografia;TabNet DATASUS
+pct_pop20a24_masc;Percentual de Homens de 20 a 24 anos;;Demografia;TabNet DATASUS
+pct_pop25a29_masc;Percentual de Homens de 25 a 29 anos;;Demografia;TabNet DATASUS
+pct_pop30a34_masc;Percentual de Homens de 30 a 34 anos;;Demografia;TabNet DATASUS
+pct_pop35a39_masc;Percentual de Homens de 35 a 39 anos;;Demografia;TabNet DATASUS
+pct_pop40a44_masc;Percentual de Homens de 40 a 44 anos;;Demografia;TabNet DATASUS
+pct_pop45a49_masc;Percentual de Homens de 45 a 49 anos;;Demografia;TabNet DATASUS
+pct_pop50a54_masc;Percentual de Homens de 50 a 54 anos;;Demografia;TabNet DATASUS
+pct_pop55a59_masc;Percentual de Homens de 55 a 59 anos;;Demografia;TabNet DATASUS
+pct_pop60a64_masc;Percentual de Homens de 60 a 64 anos;;Demografia;TabNet DATASUS
+pct_pop65a69_masc;Percentual de Homens de 65 a 69 anos;;Demografia;TabNet DATASUS
+pct_pop70a74_masc;Percentual de Homens de 70 a 74 anos;;Demografia;TabNet DATASUS
+pct_pop75a79_masc;Percentual de Homens de 75 a 79 anos;;Demografia;TabNet DATASUS
+pct_pop80m_masc;Percentual de Homens acima de 80 anos;;Demografia;TabNet DATASUS
+pct_pop_masc;Percentual de Homens;;Demografia;TabNet DATASUS
