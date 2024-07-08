@@ -283,7 +283,7 @@ IEPS_codebook <- read_delim("dados_brutos/IEPS/IEPS_codebook.csv",
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
 IEPS_codebook %>% 
-  savexls(df, 'name-of-your-excel-file.xlsx')
+  write_xlsx(here("dados_brutos", "IEPS",'IEPS_codebook.xlsx'))
 
 IEPS_var_selecionadas = IEPS_codebook
   
