@@ -5,8 +5,12 @@ output: html_notebook
 
 # Bibliotecas
 ```{r}
+
+# install.packages("writexl")
+
 library(tidyverse)
 library(here)
+library(writexl)
 library(readxl)
 library(janitor)
 library(stringi)
@@ -270,6 +274,19 @@ IEPS_Completo_2010_2022_Todos = bind_rows(IEPS_Brasil_2010_2022_Todos,
 
 IEPS_Completo_2010_2022_Todos %>% 
   saveRDS(file = here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds"))
+```
+
+
+```{r}
+
+IEPS_codebook <- read_delim("dados_brutos/IEPS/IEPS_codebook.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+IEPS_codebook %>% 
+  savexls(df, 'name-of-your-excel-file.xlsx')
+
+IEPS_var_selecionadas = IEPS_codebook
+  
 ```
 
 
