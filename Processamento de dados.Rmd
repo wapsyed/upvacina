@@ -10,8 +10,6 @@ library(here)
 library(readxl)
 library(janitor)
 library(stringi)
-devtools::install_github("tbrugz/ribge")
-library(ribge)
 ```
 
 # Unindo tabelas
@@ -234,8 +232,6 @@ print(populacao_municipios_2000_2022)
 ```
 
 
-
-
 ```{r}
 #Unir dados
 
@@ -247,5 +243,59 @@ municipios_2 = municipios %>%
 
 
 ```
+
+
+#IEPS dados
+
+
+```{r}
+
+#Unir dados
+IEPS_Brasil_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_Brasil_2010_2022_Todos.xlsx") %>% 
+  mutate(nivel = "Brasil")
+IEPS_Estados_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_Estados_2010_2022_Todos.xlsx") %>% 
+  mutate(nivel = "Estado")
+IEPS_MacroRegiao_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_MacroRegiao_2010_2022_Todos.xlsx") %>% 
+  mutate(nivel = "Macro Região")
+IEPS_Municipios_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_Municipios_2010_2022_Todos.xlsx") %>% 
+  mutate(nivel = "Município")
+IEPS_Regiao_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_Regiao_2010_2022_Todos.xlsx") %>% 
+  mutate(nivel = "Região")
+
+
+IEPS_Completo_2010_2022_Todos = bind_rows(IEPS_Brasil_2010_2022_Todos,
+                                          IEPS_Estados_2010_2022_Todos,
+                                          IEPS_MacroRegiao_2010_2022_Todos,
+                                          IEPS_Regiao_2010_2022_Todos)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
