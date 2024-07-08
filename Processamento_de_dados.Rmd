@@ -1,5 +1,5 @@
 ---
-title: "UPVacina - Dados SIPNI"
+title: "UPVacina"
 output: html_notebook
 ---
 
@@ -248,7 +248,7 @@ municipios_2 = municipios %>%
 #IEPS dados
 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 #Unir dados
 IEPS_Brasil_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_Brasil_2010_2022_Todos.xlsx") %>% 
   mutate(nivel = "Brasil")
