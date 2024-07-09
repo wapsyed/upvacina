@@ -7,6 +7,8 @@ output: html_notebook
 ```{r}
 
 # install.packages("writexl")
+# devtools::install_github('Mikata-Project/ggthemr')
+
 
 library(tidyverse)
 library(here)
@@ -14,6 +16,10 @@ library(writexl)
 library(readxl)
 library(janitor)
 library(stringi)
+library(ggthemes)
+library(esquisse)
+library(ggthemr)
+
 ```
 
 # Unindo tabelas
@@ -276,16 +282,91 @@ IEPS_Completo_2010_2022_Todos %>%
   saveRDS(file = here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds"))
 ```
 
-
+Seleção de variáveis
 ```{r}
-
+#Converter .csv para .xlsx
 IEPS_codebook <- read_delim("dados_brutos/IEPS/IEPS_codebook.csv", 
     delim = ";", escape_double = FALSE, trim_ws = TRUE)
-
 IEPS_codebook %>% 
   write_xlsx(here("dados_brutos", "IEPS",'IEPS_codebook.xlsx'))
 
-IEPS_var_selecionadas = IEPS_codebook
+#Limpar tabela
+IEPS_var_selecionadas = read_excel("dados_processados/IEPS_codebook_selecionados.xlsx") %>% 
+  clean_names() %>% 
+  filter(selecao == "Sim")
+
+IEPS_var_selecionadas = IEPS_var_selecionadas %>% 
+  mutate(bloco = if_else(str_detect(variavel, "cob_vac"), "Cobertura vacinal", bloco))
+
+#Filtrar tabela e converter texto para numérico
+IEPS_Completo_2010_2022_Todos <- readRDS(here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds")) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Completo_2010_2022_Todos %>% saveRDS(here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds"))
+
+IEPS_Completo_2010_2022_selecionados = IEPS_Completo_2010_2022_Todos %>% 
+  select(nivel, ano, id_estado:nomemun, IEPS_var_selecionadas$variavel)
+
+IEPS_Completo_2010_2022_selecionados %>% 
+  saveRDS(file = here("dados_processados", "IEPS_Completo_2010_2022_selecionados.rds"))
+
+#Dados de São Paulo
+IEPS_Completo_2010_2022_selecionados_SP = IEPS_Completo_2010_2022_selecionados %>% 
+  filter(estado_abrev == "SP")
+
+IEPS_Completo_2010_2022_selecionados_SP %>% 
+  saveRDS(file = here("dados_processados", "IEPS_Completo_2010_2022_selecionados_SP.rds"))
+
+
+```
+
+#Análise exploratória
+```{r fig.height=7, fig.width=12}
+
+#Definir tema
+ggthemr("fresh", spacing = 1)
+swatch() 
+"#111111" "#65ADC2" "#233B43" "#E84646" "#C29365" "#362C21" "#316675" "#168E7F" "#109B37"
+
+
+
+
+IEPS_Completo_filtrado_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Estado") %>% 
+  pivot_longer(cols = cob_ab:pct_pop_masc,
+               names_to = "variavel",
+               values_to = "valor") %>% 
+  inner_join(IEPS_var_selecionadas, by = "variavel") %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Completo_filtrado_SP %>% 
+  filter(bloco == "Cobertura vacinal") %>% 
+  mutate(nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", "")) %>% 
+  ggplot() +
+  aes(x = ano, y = valor) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+  geom_rect(xmin = as.numeric(as.Date("2016-01-01")),
+           xmax = as.numeric(as.Date("2020-01-01")),
+            ymin = 0,
+            ymax = 100,
+            fill = "gray",
+            alpha = 0.03) +
+  geom_rect(xmin = as.numeric(as.Date("2020-01-01")),
+               xmax = as.numeric(as.Date("2022-01-01")),
+                ymin = 0,
+                ymax = 100,
+                fill = "gray40",
+                alpha = 0.03) +
+  geom_line(size = 2, color = "#65ADC2") +
+  theme(text = element_text(size = 15)) +
+  labs(title = "Cobertura vacinal no estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       y = "Cobertura vacinal (%)",
+       x = "") +
+  facet_wrap(~nome_dos_indicadores, scales = "free")
+      
   
 ```
 
