@@ -9,7 +9,6 @@ output: html_notebook
 # install.packages("writexl")
 # devtools::install_github('Mikata-Project/ggthemr')
 
-
 library(tidyverse)
 library(here)
 library(writexl)
@@ -324,13 +323,16 @@ IEPS_Completo_2010_2022_selecionados_SP %>%
 
 #Análise exploratória
 ```{r fig.height=7, fig.width=12}
-
 #Definir tema
 ggthemr("fresh", spacing = 1)
 swatch() 
 "#111111" "#65ADC2" "#233B43" "#E84646" "#C29365" "#362C21" "#316675" "#168E7F" "#109B37"
+```
 
 
+```{r fig.height=7, fig.width=12}
+#Importar dados
+IEPS_Completo_2010_2022_selecionados_SP <- readRDS(here("dados_processados", "IEPS_Completo_2010_2022_selecionados_SP.rds"))
 
 
 IEPS_Completo_filtrado_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
@@ -347,7 +349,7 @@ vacinas_estado_sp = IEPS_Completo_filtrado_SP %>%
   ggplot() +
   aes(x = ano, y = valor) +
   scale_x_date(date_breaks = "1 year", date_labels = "%y") +
-  scale_y_continuous(expand = c(10, 0)) +
+  scale_y_continuous(expand = expansion(add = 10)) +
   geom_rect(xmin = as.numeric(as.Date("2016-01-01")),
            xmax = as.numeric(as.Date("2020-01-01")),
             ymin = 0,
@@ -369,10 +371,14 @@ vacinas_estado_sp = IEPS_Completo_filtrado_SP %>%
   facet_wrap(~nome_dos_indicadores, scales = "free")
 
 vacinas_estado_sp +
-    annotate("text", 
-           x = as.numeric(as.Date("2018-01-01")), 
+  annotate("text", 
+           x = as.Date("2018-01-01"), 
            y = 110, 
            label = "Queda") +
+  annotate("text", 
+           x = as.Date("2021-01-01"), 
+           y = 110, 
+           label = "COVID-19")
       
   
 ```
