@@ -20,6 +20,9 @@ library(esquisse)
 library(ggthemr)
 library(ggridges)
 library(grDevices)
+library(plotly)
+library(gghighlight)
+library(ggsci)
 
 
 ```
@@ -356,13 +359,13 @@ vacinas_estado_sp = IEPS_Completo_filtrado_SP %>%
   geom_rect(xmin = as.numeric(as.Date("2016-01-01")),
            xmax = as.numeric(as.Date("2020-01-01")),
             ymin = 0,
-            ymax = 100,
+            ymax = 110,
             fill = "gray",
             alpha = 0.03) +
   geom_rect(xmin = as.numeric(as.Date("2020-01-01")),
                xmax = as.numeric(as.Date("2022-01-01")),
                 ymin = 0,
-                ymax = 100,
+                ymax = 110,
                 fill = "gray40",
                 alpha = 0.03) +
   geom_line(size = 2, color = "#65ADC2") +
@@ -378,7 +381,7 @@ vacinas_estado_sp = IEPS_Completo_filtrado_SP %>%
   facet_wrap(~nome_dos_indicadores, scales = "free")
 
 vacinas_estado_sp %>% 
-  ggsave(file = here("Figuras", "vacinas_estado_sp_2010_2022.png"), width = 12, height = 7)
+  ggsave(file = here("Figuras", "vacinas_estado_sp_2010_2022_linhas.png"), width = 12, height = 7)
 
 vacinas_estado_sp
       
@@ -387,7 +390,9 @@ vacinas_estado_sp
 
 
 Análise por região
-```{r fig.height=15, fig.width=15}
+
+## Densidade
+```{r fig.height=10, fig.width=15}
 IEPS_Completo_Regiao_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
   filter(nivel == "Região") %>% 
   pivot_longer(cols = cob_ab:pct_pop_masc,
@@ -405,34 +410,230 @@ IEPS_Completo_Regiao_SP_vacinas = IEPS_Completo_Regiao_SP %>%
   select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
   mutate(valor = round(valor, 2),
          ano = as.character(ano) %>% str_replace(., "-01-01", ""),
-         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""))
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", ""))
 
-IEPS_Completo_Regiao_SP_vacinas %>% 
+IEPS_Completo_Regiao_SP_vacinas_ridge = IEPS_Completo_Regiao_SP_vacinas %>% 
+  drop_na() %>% 
   ggplot() +
   aes(x = valor, y = fct_rev(ano), fill = ano) +
   geom_density_ridges() +
   scale_fill_manual(values = colorRampPalette(c("#65ADC2", "purple"))(15)) +
-  facet_wrap(~nome_dos_indicadores, scales = "free") +
-  theme(legend.position = "none") +
-  theme(text = element_text(size = 12),
+  theme(legend.position = "none",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
         plot.margin = unit(c(1,1,1,1), "cm"),
-        strip.text.x = element_text(size = 12,
-                                    margin = margin(5, 5, 15, 5, "pt"))) +
-  labs(title = "Cobertura vacinal de BCG",
+        strip.text.x = element_text(size = 15, face = "bold"),
+        panel.spacing=unit(2, "lines")) +
+  labs(title = "Cobertura vacinal",
        subtitle = "Período de 2010 a 2022",
        caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
-       y = "Cobertura vacinal (%)",
-       x = "") 
+       y = "",
+       x = "Cobertura vacinal (%)") +
+    facet_wrap(~nome_dos_indicadores, scales = "free_x", nrow = 2)
   
-  
+IEPS_Completo_Regiao_SP_vacinas_ridge %>% 
+    ggsave(file = here("Figuras", "vacinas_regioes_estado_sp_2010_2022_densidade.png"), width = 15, height = 10)
 
+IEPS_Completo_Regiao_SP_vacinas_ridge
+```
+## Boxplots
+```{r fig.height=10, fig.width=15}
+ IEPS_Completo_Regiao_SP_vacinas_boxplot = IEPS_Completo_Regiao_SP_vacinas %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = valor, y = fct_rev(ano), fill = ano) +
+  geom_boxplot(outliers = F) +
+  geom_jitter(aes(label = no_regiao, color = valor),
+              alpha = 0.2,
+              na.rm = T) +
+  scale_fill_manual(values = colorRampPalette(c("#65ADC2", "purple"))(15)) +
+  facet_wrap(vars(nome_dos_indicadores))  +
+    theme(legend.position = "none",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        strip.text.x = element_text(size = 15, face = "bold"),
+        panel.spacing=unit(2, "lines")) +
+  labs(title = "Cobertura vacinal",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       y = "",
+       x = "Cobertura vacinal (%)") +
+    facet_wrap(~nome_dos_indicadores, scales = "free_x", nrow = 2)
+IEPS_Completo_Regiao_SP_vacinas_boxplot %>% 
+    ggsave(file = here("Figuras", "vacinas_regioes_estado_sp_2010_2022_boxplot.png"), width = 15, height = 12)
+
+IEPS_Completo_Regiao_SP_vacinas_boxplot  
 ```
 
-Ribeirão preto
 ```{r}
-IEPS_Completo_2010_2022_selecionados_SP %>% 
-  filter(nomemun == "Ribeirão Preto")
+IEPS_Completo_Regiao_SP_vacinas_BCG_boxplot = IEPS_Completo_Regiao_SP_vacinas %>% 
+  filter(nome_dos_indicadores == "BCG") %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = fct_rev(ano), y = valor, fill = ano) +
+  geom_boxplot(outliers = F) +
+  geom_jitter(aes(label = no_regiao, color = valor),
+              alpha = 0.2,
+              na.rm = T) +
+  scale_fill_manual(values = colorRampPalette(c("#65ADC2", "purple"))(15)) +
+    theme(legend.position = "none",
+        text = element_text(size = 12, color = "black"),
+        plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 15),
+        plot.caption = element_text(size = 10),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        strip.text.x = element_text(size = 10, face = "bold"),
+        panel.spacing=unit(2, "lines")) +
+  labs(title = "Cobertura vacinal - BCG",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       y = "",
+       x = "Cobertura vacinal (%)")  
+
+ggplotly(IEPS_Completo_Regiao_SP_vacinas_BCG_boxplot)
 ```
+
+
+## Gráfico de linhas
+
+Quais regiões tiveram cobertura vacinal mínima de 90% entre 2015 e 2022? Isto é, quais regiões foram menos afetadas pelo efeito 2016 e pela pandemia?
+```{r}
+dados_vacinas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal")) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na()
+
+#Selecionar regiões com cobertura vacinal mínima de 90%
+regioes_acima_90 = dados_vacinas %>% 
+  filter(ano >= ymd("2015-01-01") & ano <= ymd("2022-01-01")) %>% 
+  group_by(no_regiao, nome_dos_indicadores) %>% 
+  summarise(min_coverage = min(valor)) %>%
+  filter(min_coverage > 90)
+
+```
+
+```{r fig.height=10, fig.width=15}
+regioes_acima_90_vacina_linhas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
+         no_regiao %in% unique(regioes_acima_90$no_regiao)) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = ano, y = valor, group = no_regiao) +
+  geom_line(aes(color = no_regiao),
+            size = 2) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+    theme(legend.position = "top",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal no estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Região",
+       y = "Cobertura vacinal (%)",
+       x = "") +
+  facet_wrap(~nome_dos_indicadores, scales = "free") +
+  scale_color_jama()
+
+regioes_acima_90_vacina_linhas
+regioes_acima_90_vacina_linhas %>% 
+    ggsave(file = here("Figuras", "vacinas_acima_90_regioes_estado_sp_2010_2022_linhas.png"), width = 15, height = 10)
+
+```
+
+
+Quais foram as regiões que mais tiveram redução da cobertura vacinal por vacina?
+
+```{r fig.height=10, fig.width=15}
+# Calcular a variação anual e filtrar variações negativas
+variacoes_negativas <- dados_vacinas %>%
+    drop_na() %>% 
+  arrange(no_regiao, nome_dos_indicadores, ano) %>%
+  group_by(no_regiao, nome_dos_indicadores) %>%
+  mutate(variacao_anual = valor - lag(valor)) %>%
+  group_by(nome_dos_indicadores) %>% 
+  arrange(nome_dos_indicadores, variacao_anual)  %>% 
+  filter(variacao_anual<0)
+
+#Top 5 regiões com maior queda da cobertura vacinal
+variacoes_negativas_top5 = variacoes_negativas %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+top5_reduz_2016 = variacoes_negativas %>% 
+  filter(ano == "2016-01-01")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+top5_reduz_2020 = variacoes_negativas %>% 
+  filter(ano == "2020-01-01")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+
+
+#Top 5 regiões com maior queda da cobertura de BCG
+bcg_top5_reduz_2016 = variacoes_negativas %>% 
+  filter(ano == "2016-01-01", 
+         nome_dos_indicadores == "BCG")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+bcg_top5_reduz_2020 = variacoes_negativas %>% 
+  filter(ano == "2020-01-01", 
+         nome_dos_indicadores == "BCG")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+```
+
+
+```{r fig.height=5, fig.width=10}
+bcg_queda_2016_linhas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
+         str_detect(nome_dos_indicadores, "BCG"),
+         no_regiao %in% bcg_top5_reduz_2016$no_regiao) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = ano, y = valor, group = no_regiao) +
+  geom_line(aes(color = no_regiao),
+            size = 1) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+    theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG no estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Região",
+       y = "Cobertura vacinal (%)",
+       x = "") +
+  scale_color_jama()
+bcg_queda_2016_linhas
+
+bcg_queda_2016_linhas %>% 
+    ggsave(file = here("Figuras", "vacinas_queda_2016_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
+
+```
+
+
+
 
 
 ```{r}
