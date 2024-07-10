@@ -18,6 +18,9 @@ library(stringi)
 library(ggthemes)
 library(esquisse)
 library(ggthemr)
+library(ggridges)
+library(grDevices)
+
 
 ```
 
@@ -327,13 +330,13 @@ IEPS_Completo_2010_2022_selecionados_SP %>%
 ggthemr("fresh", spacing = 1)
 swatch() 
 "#111111" "#65ADC2" "#233B43" "#E84646" "#C29365" "#362C21" "#316675" "#168E7F" "#109B37"
+
 ```
 
 
 ```{r fig.height=7, fig.width=12}
 #Importar dados
 IEPS_Completo_2010_2022_selecionados_SP <- readRDS(here("dados_processados", "IEPS_Completo_2010_2022_selecionados_SP.rds"))
-
 
 IEPS_Completo_filtrado_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
   filter(nivel == "Estado") %>% 
@@ -363,26 +366,89 @@ vacinas_estado_sp = IEPS_Completo_filtrado_SP %>%
                 fill = "gray40",
                 alpha = 0.03) +
   geom_line(size = 2, color = "#65ADC2") +
-  theme(text = element_text(size = 15)) +
+  theme(text = element_text(size = 12),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        strip.text.x = element_text(size = 12,
+                                    margin = margin(5, 5, 15, 5, "pt"))) +
   labs(title = "Cobertura vacinal no estado de São Paulo",
        subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
        y = "Cobertura vacinal (%)",
        x = "") +
   facet_wrap(~nome_dos_indicadores, scales = "free")
 
-vacinas_estado_sp +
-  annotate("text", 
-           x = as.Date("2018-01-01"), 
-           y = 110, 
-           label = "Queda") +
-  annotate("text", 
-           x = as.Date("2021-01-01"), 
-           y = 110, 
-           label = "COVID-19")
+vacinas_estado_sp %>% 
+  ggsave(file = here("Figuras", "vacinas_estado_sp_2010_2022.png"), width = 12, height = 7)
+
+vacinas_estado_sp
       
   
 ```
 
+
+Análise por região
+```{r fig.height=15, fig.width=15}
+IEPS_Completo_Regiao_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Região") %>% 
+  pivot_longer(cols = cob_ab:pct_pop_masc,
+               names_to = "variavel",
+               values_to = "valor") %>% 
+  inner_join(IEPS_var_selecionadas, by = "variavel") %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Completo_Regiao_SP %>% 
+  count(no_regiao)
+
+
+IEPS_Completo_Regiao_SP_vacinas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal")) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         ano = as.character(ano) %>% str_replace(., "-01-01", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""))
+
+IEPS_Completo_Regiao_SP_vacinas %>% 
+  ggplot() +
+  aes(x = valor, y = fct_rev(ano), fill = ano) +
+  geom_density_ridges() +
+  scale_fill_manual(values = colorRampPalette(c("#65ADC2", "purple"))(15)) +
+  facet_wrap(~nome_dos_indicadores, scales = "free") +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 12),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        strip.text.x = element_text(size = 12,
+                                    margin = margin(5, 5, 15, 5, "pt"))) +
+  labs(title = "Cobertura vacinal de BCG",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       y = "Cobertura vacinal (%)",
+       x = "") 
+  
+  
+
+```
+
+Ribeirão preto
+```{r}
+IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nomemun == "Ribeirão Preto")
+```
+
+
+```{r}
+#Macro regiões
+IEPS_Completo_MacroRegiao_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Macro Região") %>% 
+  pivot_longer(cols = cob_ab:pct_pop_masc,
+               names_to = "variavel",
+               values_to = "valor") %>% 
+  inner_join(IEPS_var_selecionadas, by = "variavel") %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Completo_MacroRegiao_SP %>% 
+  count(no_macro)
+
+```
 
 
 
