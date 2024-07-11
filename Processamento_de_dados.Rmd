@@ -276,40 +276,76 @@ IEPS_Municipios_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_Municipios
 IEPS_Regiao_2010_2022_Todos <- read_excel("dados_brutos/IEPS/IEPS_Regiao_2010_2022_Todos.xlsx") %>% 
   mutate(nivel = "Região")
 
-
 IEPS_Completo_2010_2022_Todos = bind_rows(IEPS_Brasil_2010_2022_Todos,
                                           IEPS_Estados_2010_2022_Todos,
                                           IEPS_MacroRegiao_2010_2022_Todos,
                                           IEPS_Regiao_2010_2022_Todos,
-                                          IEPS_Municipios_2010_2022_Todos)
+                                          IEPS_Municipios_2010_2022_Todos) 
+
+#Padronizar tabelas
+
+IEPS_Brasil_2010_2022_Todos <- IEPS_Brasil_2010_2022_Todos %>% 
+  mutate(nivel = "Brasil") %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Estados_2010_2022_Todos <- IEPS_Estados_2010_2022_Todos %>% 
+  mutate(nivel = "Estado") %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_MacroRegiao_2010_2022_Todos <- IEPS_MacroRegiao_2010_2022_Todos %>% 
+  mutate(nivel = "Macro Região") %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Regiao_2010_2022_Todos <- IEPS_Regiao_2010_2022_Todos %>% 
+  mutate(nivel = "Região") %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Municipios_2010_2022_Todos <- IEPS_Municipios_2010_2022_Todos %>% 
+  mutate(nivel = "Município",
+         porte_municipio = case_when(pop <= 20000 ~ "Município de Pequeno Porte I",
+                                     pop <= 50000 ~ "Município de Pequeno Porte II",
+                                     pop <= 100000 ~ "Município de Médio Porte",
+                                     pop <= 900000 ~ "Município de Grande Porte",
+                                     TRUE ~ "Metrópole")) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+IEPS_Completo_2010_2022_Todos = IEPS_Completo_2010_2022_Todos %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
+  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
 
 IEPS_Completo_2010_2022_Todos %>% 
   saveRDS(file = here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds"))
+
+
 ```
 
 Seleção de variáveis
 ```{r}
 #Converter .csv para .xlsx
-IEPS_codebook <- read_delim("dados_brutos/IEPS/IEPS_codebook.csv", 
-    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+IEPS_codebook <- read_delim("dados_brutos/IEPS/IEPS_codebook.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
 IEPS_codebook %>% 
   write_xlsx(here("dados_brutos", "IEPS",'IEPS_codebook.xlsx'))
 
 #Limpar tabela
 IEPS_var_selecionadas = read_excel("dados_processados/IEPS_codebook_selecionados.xlsx") %>% 
   clean_names() %>% 
-  filter(selecao == "Sim")
-
-IEPS_var_selecionadas = IEPS_var_selecionadas %>% 
+  filter(selecao == "Sim") %>% 
   mutate(bloco = if_else(str_detect(variavel, "cob_vac"), "Cobertura vacinal", bloco))
 
 #Filtrar tabela e converter texto para numérico
-IEPS_Completo_2010_2022_Todos <- readRDS(here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds")) %>% 
-  mutate(across(c(cob_ab:pct_pop_masc), ~ str_replace(., ",", "."))) %>% 
-  mutate(across(c(cob_ab:pct_pop_masc), ~ as.numeric(.))) %>% 
-  mutate(ano = lubridate::ymd(ano, truncated = 2L))
-
-IEPS_Completo_2010_2022_Todos %>% saveRDS(here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds"))
+IEPS_Completo_2010_2022_Todos <- readRDS(here("dados_processados", "IEPS_Completo_2010_2022_Todos.rds"))
 
 IEPS_Completo_2010_2022_selecionados = IEPS_Completo_2010_2022_Todos %>% 
   select(nivel, ano, id_estado:nomemun, IEPS_var_selecionadas$variavel)

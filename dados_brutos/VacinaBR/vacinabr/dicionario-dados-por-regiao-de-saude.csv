@@ -1,0 +1,22 @@
+Coluna,Nome da variável,Tipo,Descrição
+co_cir,Região de Saúde,Numérica,Código de 5 dígitos da região de saúde
+ano,Ano do registro,"Numérica
+2000-2022",Ano de registro das doses aplicadas
+faixa_etaria,Faixa etária da população alvo,"Numérica
+0-4",Faixa etária da população alvo em idade simples (“0” se refere a “menos de 1 ano”
+numero_dose,Número da dose,"Numérica
+1-4",Número da dose no esquema vacinal. Deve ser combinada com a coluna “reforço” para identificação correta da dose.
+reforco,Dose de reforço,Booleana,TRUE se a linha se refere a doses de reforço
+imunizante,Imunizante utilizado,"Texto,
+19 distintos, incluindo NA",Nome do imunizante utilizado. Este campo deve estar vazio para dados agregados por doença
+doenca,Doença alvo,"Texto,
+17 distintos, incluindo NA",Doença à qual as doses aplicadas se referem. Este campo deve estar vazio para dados agregados por imunizante
+meta,Meta de cobertura,"Numérica
+90 ou 95",Meta de cobertura estabelecida pelo PNI para doença ou imunizante em questão
+meta_atingida,Meta atingida,Booleana,TRUE se o município atingiu a meta de cobertura para determinada doença/imunizante naquele ano
+populacao,População alvo,Numérica,População na faixa etária relevante para aquele município naquele ano. Obtida via Sinasc para 0 e 1 anos de idade.
+qt_dose,Quantidade de doses aplicadas,Numérica,Quantidade de doses aplicadas para aquele imunizante/doença no ano e faixa etária indicados nas respectivas colunas
+homog_geo,Homogeneidade geográfica,Numérica,Fração dos municípios naquele estado em determinado ano e que atingiram a meta de cobertura para aquela doença/imunizante
+cobertura,Cobertura vacinal,Numérica,Cobertura vacinal (Doses aplicadas/População alvo) para aquele imunizante/doença no ano e faixa etária indicados nas respectivas colunas
+abandono,Taxa Abandono,Numérica,Taxa de abandono para aquele imunizante/doença no ano e faixa etária indicados nas respectivas colunas. Deve ser vazio para primeiras doses de cada esquema
+ultima_dose,Última dose do esquema,Booleana,TRUE se a linha representa a última dose do esquema vacinal
