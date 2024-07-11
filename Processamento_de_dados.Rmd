@@ -254,9 +254,6 @@ municipios_2 = municipios %>%
  left_join(populacao_municipios_2000_2022 %>% 
              select(codigo_municipio, ano, populacao),
             by = c("codigo_municipio", "ano"))
-
-
-
 ```
 
 
@@ -375,7 +372,7 @@ swatch()
 
 ```{r fig.height=7, fig.width=12}
 #Importar dados
-IEPS_Completo_2010_2022_selecionados_SP <- readRDS(here("dados_processados", "IEPS_Completo_2010_2022_selecionados_SP.rds"))
+IEPS_Completo_2010_2022_selecionados_SP <- readRDS(here("dados_processados", "IEPS_Completo_2010_2022_selecionados_SP.rds")) 
 
 IEPS_Completo_filtrado_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
   filter(nivel == "Estado") %>% 
@@ -582,11 +579,12 @@ regioes_acima_90_vacina_linhas = IEPS_Completo_Regiao_SP %>%
   labs(title = "Cobertura vacinal no estado de São Paulo",
        subtitle = "Período de 2010 a 2022",
        caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
-       color = "Região",
+       color = "Microrregião",
        y = "Cobertura vacinal (%)",
        x = "") +
   facet_wrap(~nome_dos_indicadores, scales = "free") +
-  scale_color_jama()
+  scale_shape_manual(values = c(16)) +
+  scale_color_cosmic()
 
 regioes_acima_90_vacina_linhas
 regioes_acima_90_vacina_linhas %>% 
@@ -618,7 +616,6 @@ top5_reduz_2020 = variacoes_negativas %>%
   filter(ano == "2020-01-01")  %>% 
   slice_min(n = 5, order_by = variacao_anual)
 
-
 #Top 5 regiões com maior queda da cobertura de BCG
 bcg_top5_reduz_2016 = variacoes_negativas %>% 
   filter(ano == "2016-01-01", 
@@ -628,6 +625,9 @@ bcg_top5_reduz_2020 = variacoes_negativas %>%
   filter(ano == "2020-01-01", 
          nome_dos_indicadores == "BCG")  %>% 
   slice_min(n = 5, order_by = variacao_anual)
+
+bcg_top5_reduz_2016
+bcg_top5_reduz_2020
 ```
 
 
@@ -644,7 +644,7 @@ bcg_queda_2016_linhas = IEPS_Completo_Regiao_SP %>%
   ggplot() +
   aes(x = ano, y = valor, group = no_regiao) +
   geom_line(aes(color = no_regiao),
-            size = 1) +
+            size = 2) +
   scale_x_date(date_breaks = "1 year", date_labels = "%y") +
     theme(legend.position = "right",
         text = element_text(size = 15, color = "black"),
@@ -657,33 +657,54 @@ bcg_queda_2016_linhas = IEPS_Completo_Regiao_SP %>%
   labs(title = "Cobertura vacinal da BCG no estado de São Paulo",
        subtitle = "Período de 2010 a 2022",
        caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
-       color = "Região",
+       color = "Microrregião",
        y = "Cobertura vacinal (%)",
        x = "") +
-  scale_color_jama()
+  scale_color_cosmic()
 bcg_queda_2016_linhas
 
 bcg_queda_2016_linhas %>% 
     ggsave(file = here("Figuras", "vacinas_queda_2016_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
 
 ```
+2020
+```{r fig.height=5, fig.width=10}
+bcg_queda_2020_linhas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
+         str_detect(nome_dos_indicadores, "BCG"),
+         no_regiao %in% bcg_top5_reduz_2020$no_regiao) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = ano, y = valor, group = no_regiao) +
+  geom_line(aes(color = no_regiao),
+            size = 2) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+    theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG no estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Microrregião",
+       y = "Cobertura vacinal (%)",
+       x = "") +
+  scale_color_cosmic()
+bcg_queda_2020_linhas
 
-
-
-
+bcg_queda_2020_linhas %>% 
+    ggsave(file = here("Figuras", "vacinas_queda_2020_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
+```
 
 ```{r}
-#Macro regiões
-IEPS_Completo_MacroRegiao_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
-  filter(nivel == "Macro Região") %>% 
-  pivot_longer(cols = cob_ab:pct_pop_masc,
-               names_to = "variavel",
-               values_to = "valor") %>% 
-  inner_join(IEPS_var_selecionadas, by = "variavel") %>% 
-  mutate(ano = lubridate::ymd(ano, truncated = 2L))
-
-IEPS_Completo_MacroRegiao_SP %>% 
-  count(no_macro)
 
 ```
 
