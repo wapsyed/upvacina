@@ -1,14 +1,17 @@
 ---
 title: "UPVacina"
 output: html_notebook
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(dpi=600,fig.width=5)
 ```
 
 # Bibliotecas
+
 ```{r}
 
 # install.packages("writexl")
@@ -34,6 +37,7 @@ library(patchwork)
 # Unindo tabelas
 
 Dados de estados
+
 ```{r}
 lista_UF_cobertura = list.files() 
 
@@ -71,8 +75,8 @@ sipni_cobertura_uf_1994_2023 <- lapply(arquivos_xlsx, read_xl_sipni) %>%
 saveRDS(sipni_cobertura_uf_1994_2023, file = "sipni_cobertura_uf_1994_2023.rds")
 ```
 
-
 Dados de municípios
+
 ```{r}
 #Listar tabelas
 lista_MU_cobertura = list.files() 
@@ -109,6 +113,7 @@ saveRDS(sipni_cobertura_municipios_1994_2023,
 ```
 
 # Processamento de dados
+
 ```{r}
 #Estados
 sipni_cobertura_uf_1994_2023_2 = sipni_cobertura_uf_1994_2023 %>% 
@@ -135,8 +140,7 @@ glimpse(sipni_cobertura_municipios_1994_2023_2)
 
 ```
 
-
-#Anotar municipios e estados 
+#Anotar municipios e estados
 
 ```{r}
 #Anotações de cidades. Fonte: IBGE. https://www.ibge.gov.br/explica/codigos-dos-municipios.php
@@ -158,21 +162,13 @@ saveRDS(municipios, file = "sipni_cobertura_municipios_1994_2023_2.rds")
   
 ```
 
-
-#Análise de dados
-Os dados das populações foram obtidos dos anos 2000 a 2022, pois os anos 2007 e 2023 não estavam disponíveis.
-Definir variáveis
-- https://www.ibge.gov.br/estatisticas/downloads-estatisticas.html 
-- Censos
-- Perfil Estados
-- Perfil Municipios
-- Economicos
-- Indicadores sociais
-- Educacação e qualificação profissional
-- Economia de saúde
-- Acesso à internet
-- Educação
-- Saúde
+#Análise de dados Os dados das populações foram obtidos dos anos 2000 a
+2022, pois os anos 2007 e 2023 não estavam disponíveis. Definir
+variáveis -
+<https://www.ibge.gov.br/estatisticas/downloads-estatisticas.html> -
+Censos - Perfil Estados - Perfil Municipios - Economicos - Indicadores
+sociais - Educacação e qualificação profissional - Economia de saúde -
+Acesso à internet - Educação - Saúde
 
 ```{r}
 install.packages("basedosdados")
@@ -188,7 +184,6 @@ query <- bdplyr("br_ms_atencao_basica.municipio")
 df <- bd_collect(query)
 
 ```
-
 
 ```{r}
 # População ---- 
@@ -250,7 +245,6 @@ populacao_municipios_2000_2022 <- bind_rows(resultados, .id = "ano") %>%
 print(populacao_municipios_2000_2022)
 ```
 
-
 ```{r}
 #Unir dados
 
@@ -260,9 +254,7 @@ municipios_2 = municipios %>%
             by = c("codigo_municipio", "ano"))
 ```
 
-
 #IEPS dados
-
 
 ```{r message=FALSE, warning=FALSE}
 #Unir dados
@@ -332,6 +324,7 @@ IEPS_Completo_2010_2022_Todos %>%
 ```
 
 Seleção de variáveis
+
 ```{r}
 #Converter .csv para .xlsx
 IEPS_codebook <- read_delim("dados_brutos/IEPS/IEPS_codebook.csv", delim = ";", escape_double = FALSE, trim_ws = TRUE)
@@ -365,11 +358,11 @@ IEPS_Completo_2010_2022_selecionados_SP %>%
 ```
 
 #Análise exploratória
+
 ```{r fig.height=7, fig.width=12}
 #Definir tema
 ggthemr("fresh", spacing = 1)
 ```
-
 
 ```{r fig.height=7, fig.width=12}
 #Importar dados
@@ -408,7 +401,10 @@ IEPS_Completo_Regiao_SP_vacinas = IEPS_Completo_Regiao_SP %>%
 
 ```
 
-Quais regiões tiveram cobertura vacinal mínima de 90% entre 2015 e 2022? Isto é, quais regiões foram menos afetadas pelo efeito 2016 e pela pandemia?
+Quais regiões tiveram cobertura vacinal mínima de 90% entre 2015 e 2022?
+Isto é, quais regiões foram menos afetadas pelo efeito 2016 e pela
+pandemia?
+
 ```{r}
 dados_vacinas = IEPS_Completo_Regiao_SP %>% 
   filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal")) %>% 
@@ -427,7 +423,8 @@ regioes_acima_90 = dados_vacinas %>%
 
 ```
 
-Quais foram as regiões que mais tiveram redução da cobertura vacinal por vacina?
+Quais foram as regiões que mais tiveram redução da cobertura vacinal por
+vacina?
 
 ```{r fig.height=10, fig.width=15}
 # Calcular a variação anual e filtrar variações negativas
@@ -463,7 +460,6 @@ bcg_top5_reduz_2020 = variacoes_negativas %>%
 bcg_top5_reduz_2016
 bcg_top5_reduz_2020
 ```
-
 
 ```{r fig.height=7, fig.width=12}
 vacinas_estado_sp = IEPS_Completo_filtrado_SP %>% 
@@ -503,11 +499,9 @@ vacinas_estado_sp %>%
 vacinas_estado_sp
 ```
 
-
 Análise por região
 
 ## Densidade
-
 
 ```{r fig.height=10, fig.width=15}
 IEPS_Completo_Regiao_SP_vacinas_ridge = IEPS_Completo_Regiao_SP_vacinas %>% 
@@ -536,7 +530,9 @@ IEPS_Completo_Regiao_SP_vacinas_ridge %>%
 
 IEPS_Completo_Regiao_SP_vacinas_ridge
 ```
+
 ## Boxplots
+
 ```{r fig.height=10, fig.width=15}
  IEPS_Completo_Regiao_SP_vacinas_boxplot = IEPS_Completo_Regiao_SP_vacinas %>% 
   drop_na() %>% 
@@ -596,7 +592,6 @@ IEPS_Completo_Regiao_SP_vacinas_BCG_boxplot = IEPS_Completo_Regiao_SP_vacinas %>
 ggplotly(IEPS_Completo_Regiao_SP_vacinas_BCG_boxplot)
 ```
 
-
 ## Gráfico de linhas
 
 ```{r fig.height=10, fig.width=15}
@@ -637,7 +632,6 @@ regioes_acima_90_vacina_linhas %>%
 
 ```
 
-
 ```{r fig.height=5, fig.width=10}
 bcg_queda_2016_linhas = IEPS_Completo_Regiao_SP %>% 
   filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
@@ -674,7 +668,9 @@ bcg_queda_2016_linhas %>%
     ggsave(file = here("Figuras", "vacinas_queda_2016_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
 
 ```
+
 2020
+
 ```{r fig.height=5, fig.width=10}
 bcg_queda_2020_linhas = IEPS_Completo_Regiao_SP %>% 
   filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
@@ -710,8 +706,8 @@ bcg_queda_2020_linhas
 bcg_queda_2020_linhas %>% 
     ggsave(file = here("Figuras", "vacinas_queda_2020_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
 ```
-# PCA
 
+# PCA
 
 ```{r}
 library(tidyverse)
@@ -727,9 +723,10 @@ library(ggcorrplot)
 library(ComplexHeatmap)
 library(circlize)
 library(ggExtra)
-library("FactoMineR")
+library(FactoMineR)
 ```
 
+## Microrregião: Cobertura vacinal somente
 
 ```{r}
 pca_microrregiao = IEPS_Completo_2010_2022_selecionados_SP %>% 
@@ -746,13 +743,6 @@ pca_microrregiao_ann = IEPS_Completo_2010_2022_selecionados_SP %>%
   filter(nivel == "Região",
          ano == "2020") %>% 
   select(no_regiao, pop) %>% 
-  mutate(porte_municipio = case_when(pop <= 20000 ~ "Pequeno Porte I",
-                                     pop <= 50000 ~ "Pequeno Porte II",
-                                     pop <= 100000 ~ "Médio Porte",
-                                     pop <= 900000 ~ "Grande Porte",
-                                     TRUE ~ "Metrópole"),
-         ID = no_regiao) %>% 
-  select(-pop) %>% 
     column_to_rownames("no_regiao")
   
 # Delete columns with near 0 variance
@@ -792,16 +782,18 @@ circle_contrib= fviz_pca_var(pca_res, col.var = "cos2",
                               repel = T, 
                               labelsize = 4,
                               col.circle = NA) +
- labs(title = "Loadings plot") +
-theme(panel.grid = element_blank(),  # Remover linhas de grade
-        axis.text = element_blank(),   # Remover rótulos de texto dos eixos
-        axis.ticks = element_blank()) 
+  theme_void()
 
 circle_contrib
+
+circle_contrib %>% 
+  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Loadings.png"), 
+         width = 5, 
+         height = 5)
+
 ```
 
-
-```{r fig.width = 10, fig.height = 10}
+```{r fig.width = 10, fig.height = 6}
 # Cluster ------
 #Determine the number of clusters
 pca_scores <- data.frame(pca_res$x[, 1:2])
@@ -818,71 +810,283 @@ pca_microrregiao = pca_microrregiao %>%
   rownames_to_column("id")
 
 
-# Condition with density plot ------
+# Plot ------
 pca_plot_knn_cluster = autoplot(pca_res, 
         data = pca_microrregiao, 
         colour = 'cluster')  +
   stat_ellipse(aes(color = cluster, 
                    fill = cluster), 
                geom = "polygon", 
-               alpha = 0.2, 
+               alpha = 0.1, 
                linetype = 1,
                size = 0.3,
                type = "t") +
   geom_point(aes(fill = cluster),
              colour="black",
              pch=21, 
-             size=10) +
+             size=5) +
   labs(title = "Microrregiões paulistas, 2020") + 
-  xlab("PC1 (68.2%)") +
-  ylab("PC2 (15.9%)") +
   theme(text = element_text(color = "black")) +
   geom_label_repel(aes(label = id,
-                      segment.colour="gray70"),
+                      segment.colour= "black"),
+                  box.padding = 0.3,
+                  size = 3) 
+  
+pca_plot_knn_cluster
+pca_plot_knn_cluster_marginal = ggMarginal(
+  pca_plot_knn_cluster,
+  groupFill = T,
+  groupColour = T)
+pca_plot_knn_cluster_marginal
+
+pca_plot_knn_cluster %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020.png"), width = 10, height = 6)
+
+```
+
+```{r fig.width = 10, fig.height = 6}
+ggthemr("fresh", spacing = 1)
+swatch()
+"#111111" "#65ADC2" "#233B43" "#E84646" "#C29365" "#362C21" "#316675" "#168E7F" "#109B37"
+
+
+pca_plot_knn_cluster_gradient = autoplot(pca_res, 
+        data = pca_microrregiao)  +
+  geom_point(aes(fill = cob_vac_polio),
+             colour="black",
+             pch=21, 
+             size=5) +
+  labs(title = "Microrregiões paulistas, 2020",
+       fill = "Cobertura vacinal (%)") + 
+  theme(text = element_text(color = "black"),
+        legend.position = "top")  +
+  scale_fill_gradient(low = "#E84646", high = "#65ADC2")
+
+pca_plot_knn_cluster_gradient
+
+pca_plot_knn_cluster_gradient %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Polio.png"), width = 10, height = 6)
+```
+
+```{r fig.width = 10, fig.height = 6}
+pca_plot_knn_cluster_pop = autoplot(pca_res, 
+        data = pca_microrregiao %>% 
+          bind_cols(pca_microrregiao_ann) %>% 
+          rownames_to_column("id"))  +
+  geom_point(aes(fill = pop),
+             colour="black",
+             pch=21, 
+             size=5) +
+  labs(title = "Microrregiões paulistas, 2020",
+       fill = "População") + 
+  theme(text = element_text(color = "black"),
+        legend.position = "right")  +
+  scale_fill_gradient(trans = "log10", 
+                    low = "white", high = "purple") +
+  geom_label_repel(aes(label = id,
+                      segment.colour= "black"),
                   box.padding = 0.3,
                   size = 3) 
 
+pca_plot_knn_cluster_pop
 
-pca_plot_knn_cluster
+pca_plot_knn_cluster_pop %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Pop.png"), width = 10, height = 6)
+```
+
+
+
+## Microrregião: Selecionados
+
+```{r}
+
+ano_selec = "2020"
+
+
+pca_microrregiao = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Região",
+         ano == ano_selec) %>%
+  column_to_rownames("no_regiao") %>% 
+  select(cob_ab:cob_vac_penta, 
+         tx_mort_aj_cens:pct_desp_recp_saude_mun, 
+         desp_tot_saude_pc_mun_def,
+         desp_recp_saude_pc_mun_def, 
+         ideb_5ano:pop, 
+         pct_pop_fem:pct_pop_masc)
+
+pca_microrregiao_matrix = pca_microrregiao %>% 
+  as.matrix()
+
+dim(pca_microrregiao_matrix)
+
+pca_microrregiao_ann = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Região",
+         ano == "2020") %>% 
+  select(no_regiao, pop) %>% 
+  mutate(porte_municipio = case_when(pop <= 20000 ~ "Pequeno Porte I",
+                                     pop <= 50000 ~ "Pequeno Porte II",
+                                     pop <= 100000 ~ "Médio Porte",
+                                     pop <= 900000 ~ "Grande Porte",
+                                     TRUE ~ "Metrópole"),
+         ID = no_regiao) %>% 
+  select(-pop) %>% 
+    column_to_rownames("no_regiao")
 ```
 
 
 ```{r fig.width = 10, fig.height = 10}
-pca_plot_knn_cluster / circle_contrib + plot_layout(heights = c(2, 1))
+# Delete columns with near 0 variance
+nearZeroVarCols <- nearZeroVar(pca_microrregiao_matrix, saveMetrics = TRUE)
+pca_microrregiao_matrix_pca <- pca_microrregiao_matrix[, !nearZeroVarCols$nzv]
+pca_res <- prcomp(pca_microrregiao_matrix_pca, scale. = T)
+
+# Correlation plot ----
+corr_matrix = cor(pca_microrregiao_matrix_pca %>% scale()) 
+var <- get_pca_var(pca_res)
+
+corrplot = ggcorrplot(corr_matrix, hc.order = TRUE) +
+  theme(axis.text.x = element_text(angle = 90, size = 10),
+        axis.text.y = element_text(size = 10))
+corrplot
+
+corrplot %>% 
+  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Corrplot.png"), width = 10, height = 10)
+
 ```
 
 
+```{r fig.width = 5, fig.height = 5}
+#PCA ----
+data.pca = prcomp(corr_matrix) #PCA
+summary(corr_matrix) #Retornar PCs
+
+#Scree plot ----
+scree_plot = fviz_eig(data.pca, 
+                      addlabels = TRUE,
+                      ylim = c(0, 70)) +
+  geom_col(color = "#00AFBB", fill = "#00AFBB") 
+
+scree_plot
+
+scree_plot %>% 
+  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Screeplot.png"), 
+         width = 5,
+         height = 3)
+```
 
 
+```{r fig.width = 7, fig.height = 7}
+# Loadings plot ----
+options(ggrepel.max.overlaps = Inf)
+
+circle_contrib= fviz_pca_var(pca_res, col.var = "cos2",
+                              gradient.cols = c("purple", "black"),
+                              select.var= list(cos2 = 20), 
+                              repel = T, 
+                              labelsize = 4,
+                              col.circle = NA) 
+
+circle_contrib
+
+circle_contrib %>% 
+  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Loadings.png"), 
+         width = 5, 
+         height = 5)
+
+```
+
+```{r fig.width = 10, fig.height = 6}
+# Cluster ------
+#Determine the number of clusters
+pca_scores <- data.frame(pca_res$x[, 1:2])
+fviz_nbclust(pca_scores,  
+                     FUNcluster = kmeans,
+                     method = "wss")
 
 
+set.seed(666) # Set seed for randomization
+cluster_model <- kmeans(pca_res$x[, 1:2], centers = 3)  #Set the number of clusters
+
+pca_microrregiao$cluster <- as.factor(cluster_model$cluster)
+pca_microrregiao = pca_microrregiao %>% 
+  rownames_to_column("id")
+```
 
 
+```{r fig.width = 10, fig.height = 6}
+# Plot ------
+pca_plot_knn_cluster = autoplot(pca_res, 
+        data = pca_microrregiao, 
+        colour = 'cluster')  +
+  stat_ellipse(aes(color = cluster, 
+                   fill = cluster), 
+               geom = "polygon", 
+               alpha = 0.1, 
+               linetype = 1,
+               size = 0.3,
+               type = "t") +
+  geom_point(aes(fill = cluster,
+                 size = pop),
+             colour="black",
+             pch=21) +
+  labs(title = "Microrregiões paulistas, 2020") + 
+  theme(text = element_text(color = "black")) +
+  geom_label_repel(aes(label = id,
+                      segment.colour= "black"),
+                  box.padding = 0.3,
+                  size = 3)  +
+  scale_size_continuous(range = c(4,8))
+pca_plot_knn_cluster_marginal = ggMarginal(
+  pca_plot_knn_cluster,
+  groupFill = T,
+  groupColour = T)
+pca_plot_knn_cluster_marginal
+
+pca_plot_knn_cluster %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Clusters.png"), width = 10, height = 6)
+
+```
+
+```{r fig.width = 10, fig.height = 6}
+ggthemr("fresh", spacing = 1)
+swatch()
+
+pca_plot_knn_cluster_gradient = autoplot(pca_res, 
+        data = pca_microrregiao)  +
+  geom_point(aes(fill = cob_vac_polio,
+                 size = pop),
+             colour="black",
+             pch=21) +
+  labs(title = "Microrregiões paulistas, 2020") + 
+  theme(text = element_text(color = "black"),
+        legend.position = "right")  +
+  scale_fill_gradient(low = "#E84646", high = "#65ADC2") +
+    scale_size_continuous(range = c(4,8))
 
 
+pca_plot_knn_cluster_gradient
+
+pca_plot_knn_cluster_gradient %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Polio.png"), width = 10, height = 6)
+```
 
 
+```{r fig.width = 10, fig.height = 6}
+"#111111" "#65ADC2" "#233B43" "#E84646" "#C29365" "#362C21" "#316675" "#168E7F" "#109B37"
+res.km <- kmeans(var$coord, centers = 3, nstart = 25)
+grp <- as.factor(res.km$cluster)
 
+pca_plot_knn_cluster_biplot = fviz_pca_biplot(pca_res, 
+                col.var = "black",
+                geom.var = c("point", "text"),
+                fill.ind = pca_microrregiao$cluster,
+                col.ind = "black",
+                pointshape = 21,
+                palette = c("#65ADC2", "#233B43", "#E84646"),
+                label = "var",
+                select.var= list(cos2 = 20), 
+                pointsize = 3,
+                addEllipses = T,
+                repel = TRUE,
+                legend.title = "Cluster") 
 
+pca_plot_knn_cluster_biplot
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+pca_plot_knn_cluster_biplot %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Biplot.png"), width = 10, height = 6)
+```
 
