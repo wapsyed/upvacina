@@ -1134,9 +1134,9 @@ cor_vac_ideb = dados_vacinas %>%
   geom_smooth(method = "lm",
               se = F)+
   scale_y_continuous(expand = expansion(add = 20)) +
-      scale_size_continuous(range = c(4,8)) +
+      scale_size_continuous(range = c(2,8)) +
   stat_correlation(method = "pearson",
-                   size = 4,
+                   size = 3,
                    label.x = 5, 
                    label.y = 120,
                    mapping = use_label(c("R", "R2", "n", "P" ))) +
