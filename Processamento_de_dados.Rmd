@@ -1132,10 +1132,10 @@ dados_vacinas = IEPS_Completo_2010_2022_selecionados_SP %>%
 
 Correlação ideb e vacina
 ```{r fig.width = 20, fig.height = 10}
-library(esquisse)
-library(ggpmisc)
+# library(esquisse)
+# library(ggpmisc)
 cor_vac_ideb = dados_vacinas %>% 
-  filter(!ano == "2022") %>% 
+  filter(!ano == ymd("2022-01-01")) %>% 
   select(c("no_regiao", "ideb_5ano", "ideb_9ano", "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
   ggplot(.) +
   aes(x = ideb_5ano, y = cob_vac_bcg) +
@@ -1177,6 +1177,540 @@ cor_vac_ideb %>%
   ggsave(file = here("Figuras", "Microrregioes_2010_2020_BCG_vs_IDEB.png"), 
          width = 20,
          height = 10)
+
+```
+
+IDHM e vacina
+
+```{r fig.width = 20, fig.height = 10}
+cor_vac_idhm = dados_vacinas %>% 
+  filter(!ano == ymd("2022-01-01")) %>% 
+  select(c("no_regiao", "idhm", "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  ggplot(.) +
+  aes(x = idhm, y = cob_vac_bcg) +
+  # geom_point(color = "black", 
+  #            shape = "circle") +
+  geom_point(aes(fill = porte_municipio, 
+                 colour = porte_municipio,
+                 size = pop), 
+             shape = "circle") +
+  geom_smooth(method = "lm",
+              alpha = 0.1,
+              se = T) +
+  scale_y_continuous(expand = expansion(add = 20)) +
+      scale_size_continuous(range = c(2,8)) +
+  stat_correlation(method = "pearson",
+                   size = 3.5,
+                   label.x = 5, 
+                   label.y = 120,
+                   mapping = use_label(c("R", "R2", "P", "n"))) +
+  theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG e IDH municipal, microrregiões do estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Microrregião",
+       y = "Cobertura vacinal (%)",
+       x = "IDHM") +
+  facet_wrap(~ano, scales = "free", nrow = 2)
+
+cor_vac_idhm
+
+cor_vac_idhm %>% 
+  ggsave(file = here("Figuras", "Microrregioes_2010_2020_BCG_vs_IDHM.png"), 
+         width = 20, height = 10)
+```
+
+Taxa de mortes evitaveis e vacina
+
+```{r fig.width = 20, fig.height = 10}
+
+variavel_interesse = "tx_mort_evit_aj_cens"
+
+cor_vac_txmortes = dados_vacinas %>% 
+  filter(!ano == ymd("2022-01-01")) %>% 
+  select(c("no_regiao", variavel_interesse, "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  ggplot(.) +
+  aes(x = variavel_interesse, y = cob_vac_bcg) +
+  # geom_point(color = "black", 
+  #            shape = "circle") +
+  geom_point(aes(fill = porte_municipio, 
+                 colour = porte_municipio,
+                 size = pop), 
+             shape = "circle") +
+  geom_smooth(method = "lm",
+              alpha = 0.1,
+              se = T) +
+  scale_y_continuous(expand = expansion(add = 20)) +
+      scale_size_continuous(range = c(2,8)) +
+  stat_correlation(method = "pearson",
+                   size = 3.5,
+                   label.x = 5, 
+                   label.y = 120,
+                   mapping = use_label(c("R", "R2", "P", "n"))) +
+  theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG e Taxa de mortes evitaveis (CENSO), microrregiões do estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Microrregião",
+       y = "Taxa de mortes evitaveis (CENSO)",
+       x = "IDHM") +
+  facet_wrap(~ano, scales = "free", nrow = 2)
+
+cor_vac_txmortes
+
+cor_vac_txmortes %>% 
+  ggsave(file = here("Figuras", "Microrregioes_2010_2020_BCG_vs_Taxa_Mortes_Evitaveis.png"), 
+         width = 20, height = 10)
+```
+
+# PCA
+
+```{r}
+library(tidyverse)
+library(ggrepel) #load before factoextra
+library(factoextra)
+library(caret)
+library(stats)
+library(ggfortify)
+library(ggplot2)
+library(corrplot)
+library(cowplot)
+library(ggcorrplot)
+library(ComplexHeatmap)
+library(circlize)
+library(ggExtra)
+library(FactoMineR)
+```
+
+
+
+
+## Muncípios: Selecionados
+
+```{r}
+
+ano_selec = "2020-01-01"
+
+
+pca_municipio = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Município",
+         ano == ymd(ano_selec)) %>%
+  column_to_rownames("nomemun") %>% 
+  select(cob_ab:cob_vac_penta, 
+         tx_mort_aj_cens:pct_desp_recp_saude_mun, 
+         desp_tot_saude_pc_mun_def,
+         desp_recp_saude_pc_mun_def, 
+         ideb_5ano:pop, 
+         pct_pop_fem:pct_pop_masc)
+
+pca_municipio_matrix = pca_municipio %>% 
+  as.matrix()
+
+dim(pca_municipio_matrix)
+
+pca_municipio_ann = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Município",
+         ano == ymd(ano_selec)) %>% 
+  select(nomemun, pop) %>% 
+  mutate(porte_municipio = case_when(pop <= 20000 ~ "Pequeno Porte I",
+                                     pop <= 50000 ~ "Pequeno Porte II",
+                                     pop <= 100000 ~ "Médio Porte",
+                                     pop <= 900000 ~ "Grande Porte",
+                                     TRUE ~ "Metrópole"),
+         ID = nomemun) %>% 
+  select(-pop) %>% 
+    column_to_rownames("nomemun")
+```
+
+
+```{r fig.width = 10, fig.height = 10}
+# Delete columns with near 0 variance
+nearZeroVarCols <- nearZeroVar(pca_municipio_matrix, saveMetrics = TRUE)
+pca_municipio_matrix_pca <- pca_municipio_matrix[, !nearZeroVarCols$nzv]
+pca_res <- prcomp(pca_municipio_matrix_pca, scale. = T)
+
+# Correlation plot ----
+corr_matrix = cor(pca_municipio_matrix_pca %>% scale()) 
+var <- get_pca_var(pca_res)
+
+corr_matrix_selec = corr_matrix %>% 
+  as.data.frame() %>% 
+  rownames_to_column("id") %>% 
+  filter(str_detect(id, "cob_vac")) %>% 
+  column_to_rownames("id") %>% 
+  as.matrix()
+
+corrplot_selec = corrplot(corr_matrix_selec, is.corr=TRUE,
+         tl.col = "black",
+         method = "color",
+          col=colorRampPalette(c("blue","white","red"))(9)) +
+    theme(axis.text.x = element_text(angle = 90, size = 10),
+        axis.text.y = element_text(size = 10))
+
+corrplot = ggcorrplot(corr_matrix, hc.order = TRUE) +
+  theme(axis.text.x = element_text(angle = 90, size = 10),
+        axis.text.y = element_text(size = 10))
+corrplot
+
+corrplot %>% 
+  ggsave(file = here("Figuras", "PCA_Municípios_2020_Selecionados_Corrplot.png"), width = 10, height = 10)
+
+```
+
+
+```{r fig.width = 5, fig.height = 5}
+#PCA ----
+data.pca = prcomp(corr_matrix) #PCA
+summary(corr_matrix) #Retornar PCs
+
+#Scree plot ----
+scree_plot = fviz_eig(data.pca, 
+                      addlabels = TRUE,
+                      ylim = c(0, 70)) +
+  geom_col(color = "#00AFBB", fill = "#00AFBB") 
+
+scree_plot
+
+scree_plot %>% 
+  ggsave(file = here("Figuras", "PCA_Municípios_2020_Selecionados_Screeplot.png"), 
+         width = 5,
+         height = 3)
+```
+
+
+```{r fig.width = 7, fig.height = 7}
+# Loadings plot ----
+options(ggrepel.max.overlaps = Inf)
+
+circle_contrib= fviz_pca_var(pca_res, col.var = "cos2",
+                              gradient.cols = c("#65ADC2", "black"),
+                              select.var= list(cos2 = 30), 
+                              repel = T, 
+                              labelsize = 4,
+                              col.circle = NA) 
+
+circle_contrib
+
+circle_contrib %>% 
+  ggsave(file = here("Figuras", "PCA_Municípios_2020_Selecionados_Loadings.png"), 
+         width = 5, 
+         height = 5)
+
+```
+
+```{r fig.width = 10, fig.height = 6}
+# Cluster ------
+#Determine the number of clusters
+pca_scores <- data.frame(pca_res$x[, 1:2])
+fviz_nbclust(pca_scores,  
+                     FUNcluster = kmeans,
+                     method = "wss")
+
+
+set.seed(666) # Set seed for randomization
+cluster_model <- kmeans(pca_res$x[, 1:2], centers = 3)  #Set the number of clusters
+
+pca_municipio$cluster <- as.factor(cluster_model$cluster)
+pca_municipio = pca_municipio %>% 
+  rownames_to_column("id")
+```
+
+
+```{r fig.width = 10, fig.height = 6}
+# Plot ------
+pca_plot_knn_cluster = autoplot(pca_res, 
+        data = pca_municipio, 
+        colour = 'cluster')  +
+  stat_ellipse(aes(color = cluster, 
+                   fill = cluster), 
+               geom = "polygon", 
+               alpha = 0.1, 
+               linetype = 1,
+               size = 0.3,
+               type = "t") +
+  geom_point(aes(fill = cluster,
+                 size = pop),
+             colour="black",
+             pch=21) +
+  labs(title = "Municípios paulistas, 2020") + 
+  theme(text = element_text(color = "black")) +
+  # geom_label_repel(aes(label = id,
+  #                     segment.colour= "black"),
+  #                 box.padding = 0.3,
+  #                 size = 3)  +
+  scale_size_continuous(range = c(1,8))
+pca_plot_knn_cluster_marginal = ggMarginal(
+  pca_plot_knn_cluster,
+  groupFill = T,
+  groupColour = T)
+pca_plot_knn_cluster_marginal
+
+pca_plot_knn_cluster_marginal %>% ggsave(file = here("Figuras", "PCA_Municípios_2020_Selecionados_Clusters.png"), width = 10, height = 6)
+
+```
+
+```{r fig.width = 10, fig.height = 6}
+ggthemr("fresh", spacing = 1)
+swatch()
+
+pca_plot_knn_cluster_gradient = autoplot(pca_res, 
+        data = pca_municipio)  +
+  geom_point(aes(fill = cob_vac_polio,
+                 size = pop),
+             colour="black",
+             pch=21) +
+  labs(title = "Microrregiões paulistas, 2020") + 
+  theme(text = element_text(color = "black"),
+        legend.position = "right")  +
+  scale_fill_gradient(low = "#E84646", high = "#65ADC2") +
+    scale_size_continuous(range = c(4,8))
+
+
+pca_plot_knn_cluster_gradient
+
+pca_plot_knn_cluster_gradient %>% ggsave(file = here("Figuras", "PCA_Municipios_2020_Selecionados_Polio.png"), width = 10, height = 6)
+```
+
+```{r fig.width = 10, fig.height = 6}
+ggthemr("fresh", spacing = 1)
+swatch()
+
+pca_municipio_2 = pca_municipio %>% 
+  bind_cols(pca_municipio_ann)
+pca_plot_knn_cluster_gradient = autoplot(pca_res, 
+        data = pca_municipio_2)  +
+  geom_point(aes(fill = porte_municipio,
+                 size = pop),
+             colour="black",
+             pch=21) +
+  labs(title = "Microrregiões paulistas, 2020") + 
+  theme(text = element_text(color = "black"),
+        legend.position = "right")  +
+    scale_size_continuous(range = c(4,8))
+
+
+pca_plot_knn_cluster_gradient
+
+pca_plot_knn_cluster_gradient %>% ggsave(file = here("Figuras", "PCA_Municipios_2020_Selecionados_PorteMunicpio.png"), width = 10, height = 6)
+```
+
+
+
+
+```{r fig.width = 10, fig.height = 6}
+"#111111" "#65ADC2" "#233B43" "#E84646" "#C29365" "#362C21" "#316675" "#168E7F" "#109B37"
+res.km <- kmeans(var$coord, centers = 3, nstart = 25)
+grp <- as.factor(res.km$cluster)
+
+pca_plot_knn_cluster_biplot = fviz_pca_biplot(pca_res, 
+                col.var = "black",
+                geom.var = c("point", "text"),
+                fill.ind = pca_municipio$cluster,
+                col.ind = "black",
+                pointshape = 21,
+                palette = c("#65ADC2", "#233B43", "#E84646"),
+                label = "var",
+                select.var= list(cos2 = 20), 
+                pointsize = 3,
+                addEllipses = T,
+                repel = TRUE,
+                legend.title = "Cluster") 
+
+pca_plot_knn_cluster_biplot
+
+pca_plot_knn_cluster_biplot %>% ggsave(file = here("Figuras", "PCA_Municipios_2020_Selecionados_Biplot.png"), width = 10, height = 6)
+```
+
+
+# Correlação: Dispersão
+```{r fig.width = 15, fig.height = 10}
+pop_municipio = IEPS_Completo_2010_2022_selecionados_SP %>%
+  filter(nivel == "Município") %>% 
+    mutate(porte_municipio = case_when(pop <= 20000 ~ "Pequeno Porte I",
+                                     pop <= 50000 ~ "Pequeno Porte II",
+                                     pop <= 100000 ~ "Médio Porte",
+                                     pop <= 900000 ~ "Grande Porte",
+                                     TRUE ~ "Metrópole")) %>% 
+  select(nomemun, porte_municipio)
+
+
+dados_vacinas = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Município") %>%
+  select(nomemun, ano, cob_ab:cob_vac_penta, 
+         tx_mort_aj_cens:pct_desp_recp_saude_mun, 
+         desp_tot_saude_pc_mun_def,
+         desp_recp_saude_pc_mun_def, 
+         ideb_5ano:pop, 
+         pct_pop_fem:pct_pop_masc) %>% 
+  inner_join(pop_municipio, by = "nomemun") %>% 
+  distinct()
+```
+
+
+Correlação ideb e vacina
+```{r fig.width = 20, fig.height = 10}
+# library(esquisse)
+# library(ggpmisc)
+cor_vac_ideb = dados_vacinas %>% 
+  filter(!ano == ymd("2022-01-01")) %>% 
+  select(c("nomemun", "ideb_5ano", "ideb_9ano", "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  ggplot(.) +
+  aes(x = ideb_5ano, y = cob_vac_bcg) +
+  # geom_point(color = "black", 
+  #            shape = "circle") +
+  geom_point(aes(fill = porte_municipio, 
+                 colour = porte_municipio,
+                 size = pop), 
+             shape = "circle") +
+  geom_smooth(method = "lm",
+              alpha = 0.1,
+              se = T) +
+  scale_y_continuous(expand = expansion(add = 20)) +
+      scale_size_continuous(range = c(2,8)) +
+  stat_correlation(method = "pearson",
+                   size = 3.5,
+                   label.x = 5, 
+                   label.y = 120,
+                   mapping = use_label(c("R", "R2", "P", "n"))) +
+  theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG e IDEB 5o ano, municípios do estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Municipio",
+       y = "Cobertura vacinal (%)",
+       x = "IDEB") +
+  facet_wrap(~ano, scales = "free", nrow = 2)
+
+cor_vac_ideb
+
+cor_vac_ideb %>% 
+  ggsave(file = here("Figuras", "Municipios_2010_2020_BCG_vs_IDEB.png"), 
+         width = 20,
+         height = 10)
+
+```
+
+IDHM e vacina
+
+```{r fig.width = 20, fig.height = 10}
+cor_vac_idhm = dados_vacinas %>% 
+  filter(!ano == ymd("2022-01-01")) %>% 
+  select(c("nomemun", "idhm", "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  ggplot(.) +
+  aes(x = idhm, y = cob_vac_bcg) +
+  # geom_point(color = "black", 
+  #            shape = "circle") +
+  geom_point(aes(fill = porte_municipio, 
+                 colour = porte_municipio,
+                 size = pop), 
+             shape = "circle") +
+  geom_smooth(method = "lm",
+              alpha = 0.1,
+              se = T) +
+  scale_y_continuous(expand = expansion(add = 20)) +
+      scale_size_continuous(range = c(2,8)) +
+  stat_correlation(method = "pearson",
+                   size = 3.5,
+                   label.x = 5, 
+                   label.y = 120,
+                   mapping = use_label(c("R", "R2", "P", "n"))) +
+  theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG e IDH municipal, municípios do estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Porte do município",
+       y = "Cobertura vacinal (%)",
+       x = "IDHM") +
+  facet_wrap(~ano, scales = "free", nrow = 2)
+
+cor_vac_idhm
+
+cor_vac_idhm %>% 
+  ggsave(file = here("Figuras", "Municípios_2010_2020_BCG_vs_IDHM.png"), 
+         width = 20, height = 10)
+```
+
+Taxa de mortes evitaveis e vacina
+
+```{r fig.width = 20, fig.height = 10}
+
+variavel_interesse = "tx_mort_evit_aj_cens"
+
+cor_vac_txmortes = dados_vacinas %>% 
+  filter(!ano == ymd("2022-01-01")) %>% 
+  select(c("nomemun", variavel_interesse, "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  ggplot(.) +
+  aes(x = variavel_interesse, y = cob_vac_bcg) +
+  # geom_point(color = "black", 
+  #            shape = "circle") +
+  geom_point(aes(fill = porte_municipio, 
+                 colour = porte_municipio,
+                 size = pop), 
+             shape = "circle") +
+  geom_smooth(method = "lm",
+              alpha = 0.1,
+              se = T) +
+  scale_y_continuous(expand = expansion(add = 20)) +
+      scale_size_continuous(range = c(2,8)) +
+  stat_correlation(method = "pearson",
+                   size = 3.5,
+                   label.x = 5, 
+                   label.y = 120,
+                   mapping = use_label(c("R", "R2", "P", "n"))) +
+  theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG e Taxa de mortes evitaveis (CENSO), municípios do estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Porte municipal",
+       y = "Taxa de mortes evitaveis (CENSO)",
+       x = "IDHM") +
+  facet_wrap(~ano, scales = "free", nrow = 2)
+
+cor_vac_txmortes
+
+cor_vac_txmortes %>% 
+  ggsave(file = here("Figuras", "Municípios_2010_2020_BCG_vs_Taxa_Mortes_Evitaveis.png"), 
+         width = 20, height = 10)
+```
+
+
+
+```{r}
 
 ```
 
