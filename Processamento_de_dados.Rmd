@@ -941,7 +941,21 @@ pca_res <- prcomp(pca_microrregiao_matrix_pca, scale. = T)
 corr_matrix = cor(pca_microrregiao_matrix_pca %>% scale()) 
 var <- get_pca_var(pca_res)
 
-corrplot = ggcorrplot(corr_matrix, hc.order = TRUE) +
+corr_matrix_selec = corr_matrix %>% 
+  as.data.frame() %>% 
+  rownames_to_column("id") %>% 
+  filter(str_detect(id, "cob_vac")) %>% 
+  column_to_rownames("id") %>% 
+  as.matrix()
+
+corrplot_selec = corrplot(corr_matrix_selec, is.corr=TRUE,
+         tl.col = "black",
+         method = "color",
+          col=colorRampPalette(c("blue","white","red"))(9)) +
+    theme(axis.text.x = element_text(angle = 90, size = 10),
+        axis.text.y = element_text(size = 10))
+
+corrplot = ggcorrplot(corr_matrix_selec, hc.order = TRUE) +
   theme(axis.text.x = element_text(angle = 90, size = 10),
         axis.text.y = element_text(size = 10))
 corrplot
@@ -977,8 +991,8 @@ scree_plot %>%
 options(ggrepel.max.overlaps = Inf)
 
 circle_contrib= fviz_pca_var(pca_res, col.var = "cos2",
-                              gradient.cols = c("purple", "black"),
-                              select.var= list(cos2 = 20), 
+                              gradient.cols = c("#65ADC2", "black"),
+                              select.var= list(cos2 = 30), 
                               repel = T, 
                               labelsize = 4,
                               col.circle = NA) 
@@ -1132,14 +1146,15 @@ cor_vac_ideb = dados_vacinas %>%
                  size = pop), 
              shape = "circle") +
   geom_smooth(method = "lm",
-              se = F)+
+              alpha = 0.1,
+              se = T) +
   scale_y_continuous(expand = expansion(add = 20)) +
       scale_size_continuous(range = c(2,8)) +
   stat_correlation(method = "pearson",
-                   size = 3,
+                   size = 3.5,
                    label.x = 5, 
                    label.y = 120,
-                   mapping = use_label(c("R", "R2", "n", "P" ))) +
+                   mapping = use_label(c("R", "R2", "P", "n"))) +
   theme(legend.position = "right",
         text = element_text(size = 15, color = "black"),
         plot.title = element_text(size = 25),
@@ -1156,6 +1171,7 @@ cor_vac_ideb = dados_vacinas %>%
        x = "IDEB") +
   facet_wrap(~ano, scales = "free", nrow = 2)
 
+cor_vac_ideb
 
 cor_vac_ideb %>% 
   ggsave(file = here("Figuras", "Microrregioes_2010_2020_BCG_vs_IDEB.png"), 
