@@ -1039,7 +1039,7 @@ pca_plot_knn_cluster_marginal = ggMarginal(
   groupColour = T)
 pca_plot_knn_cluster_marginal
 
-pca_plot_knn_cluster %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Clusters.png"), width = 10, height = 6)
+pca_plot_knn_cluster_marginal %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Clusters.png"), width = 10, height = 6)
 
 ```
 
@@ -1088,5 +1088,79 @@ pca_plot_knn_cluster_biplot = fviz_pca_biplot(pca_res,
 pca_plot_knn_cluster_biplot
 
 pca_plot_knn_cluster_biplot %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Biplot.png"), width = 10, height = 6)
+```
+
+
+# Correlação: Dispersão
+```{r fig.width = 15, fig.height = 10}
+pop_regiao = IEPS_Completo_2010_2022_selecionados_SP %>%
+  filter(nivel == "Região") %>% 
+    mutate(porte_municipio = case_when(pop <= 20000 ~ "Pequeno Porte I",
+                                     pop <= 50000 ~ "Pequeno Porte II",
+                                     pop <= 100000 ~ "Médio Porte",
+                                     pop <= 900000 ~ "Grande Porte",
+                                     TRUE ~ "Metrópole")) %>% 
+  select(no_regiao, porte_municipio)
+
+
+dados_vacinas = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Região") %>%
+  select(no_regiao, ano, cob_ab:cob_vac_penta, 
+         tx_mort_aj_cens:pct_desp_recp_saude_mun, 
+         desp_tot_saude_pc_mun_def,
+         desp_recp_saude_pc_mun_def, 
+         ideb_5ano:pop, 
+         pct_pop_fem:pct_pop_masc) %>% 
+  inner_join(pop_regiao, by = "no_regiao") %>% 
+  distinct()
+```
+
+
+Correlação ideb e vacina
+```{r fig.width = 20, fig.height = 10}
+library(esquisse)
+library(ggpmisc)
+cor_vac_ideb = dados_vacinas %>% 
+  filter(!ano == "2022") %>% 
+  select(c("no_regiao", "ideb_5ano", "ideb_9ano", "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  ggplot(.) +
+  aes(x = ideb_5ano, y = cob_vac_bcg) +
+  # geom_point(color = "black", 
+  #            shape = "circle") +
+  geom_point(aes(fill = porte_municipio, 
+                 colour = porte_municipio,
+                 size = pop), 
+             shape = "circle") +
+  geom_smooth(method = "lm",
+              se = F)+
+  scale_y_continuous(expand = expansion(add = 20)) +
+      scale_size_continuous(range = c(4,8)) +
+  stat_correlation(method = "pearson",
+                   size = 4,
+                   label.x = 5, 
+                   label.y = 120,
+                   mapping = use_label(c("R", "R2", "n", "P" ))) +
+  theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG e IDEB 5o ano, microrregiões do estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Microrregião",
+       y = "Cobertura vacinal (%)",
+       x = "IDEB") +
+  facet_wrap(~ano, scales = "free", nrow = 2)
+
+
+cor_vac_ideb %>% 
+  ggsave(file = here("Figuras", "Microrregioes_2010_2020_BCG_vs_IDEB.png"), 
+         width = 20,
+         height = 10)
+
 ```
 
