@@ -13,7 +13,7 @@ knitr::opts_chunk$set(dpi=600,fig.width=5)
 # Bibliotecas
 
 ```{r}
-
+# install.packages("qqplotr")
 # install.packages("writexl")
 # devtools::install_github('Mikata-Project/ggthemr')
 
@@ -32,6 +32,8 @@ library(plotly)
 library(gghighlight)
 library(ggsci)
 library(patchwork)
+library(qqplotr)
+
 ```
 
 # Unindo tabelas
@@ -358,11 +360,54 @@ IEPS_Completo_2010_2022_selecionados_SP %>%
 ```
 
 #Análise exploratória
-
 ```{r fig.height=7, fig.width=12}
 #Definir tema
 ggthemr("fresh", spacing = 1)
 ```
+
+
+## Estados
+```{r fig.height=10, fig.width=15}
+estados_bcg = IEPS_Completo_2010_2022_selecionados %>% 
+  filter(nivel == "Estado") %>% 
+  ggplot(.) +
+  aes(x = ano, y = cob_vac_bcg) +
+  facet_wrap(vars(estado)) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+  geom_rect(xmin = as.numeric(as.Date("2016-01-01")),
+           xmax = as.numeric(as.Date("2020-01-01")),
+            ymin = 0,
+            ymax = 110,
+            fill = "gray",
+            alpha = 0.03) +
+  geom_rect(xmin = as.numeric(as.Date("2020-01-01")),
+               xmax = as.numeric(as.Date("2022-01-01")),
+                ymin = 0,
+                ymax = 110,
+                fill = "gray40",
+                alpha = 0.03) +
+  geom_line(size = 2, color = "#65ADC2") +
+  theme(text = element_text(size = 12),
+        plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 20),
+        plot.margin = unit(c(1,0,0,0), "cm"),
+        strip.text.x = element_text(size = 12,
+                                    margin = margin(5, 5, 15, 5, "pt"))) +
+  labs(title = "Cobertura vacinal da BCG nos estados",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       y = "Cobertura vacinal (%)",
+       x = "")
+  
+  estados_bcg %>% ggsave(file = here("Figuras", "Vacinas_Estados_2010_2022_BCG.png"), width = 15, height = 10)
+  
+```
+
+
+
+
+## São Paulo
+
 
 ```{r fig.height=7, fig.width=12}
 #Importar dados
@@ -391,9 +436,27 @@ IEPS_Completo_Regiao_SP = IEPS_Completo_2010_2022_selecionados_SP %>%
   mutate(ano = lubridate::ymd(ano, truncated = 2L))
 
 
+IEPS_Completo_Municipio_SP = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == "Município") %>% 
+  pivot_longer(cols = cob_ab:pct_pop_masc,
+               names_to = "variavel",
+               values_to = "valor") %>% 
+  inner_join(IEPS_var_selecionadas, by = "variavel") %>% 
+  mutate(ano = lubridate::ymd(ano, truncated = 2L))
+
+
 IEPS_Completo_Regiao_SP_vacinas = IEPS_Completo_Regiao_SP %>% 
   filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal")) %>% 
   select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         ano = as.character(ano) %>% str_replace(., "-01-01", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", ""))
+
+
+IEPS_Completo_Municipio_SP_vacinas = IEPS_Completo_Municipio_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal")) %>% 
+  select(ano, regiao, nomemun, nome_dos_indicadores, valor) %>% 
   mutate(valor = round(valor, 2),
          ano = as.character(ano) %>% str_replace(., "-01-01", ""),
          nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
@@ -406,6 +469,8 @@ Isto é, quais regiões foram menos afetadas pelo efeito 2016 e pela
 pandemia?
 
 ```{r}
+
+#Regiões -----
 dados_vacinas = IEPS_Completo_Regiao_SP %>% 
   filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal")) %>% 
   select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
@@ -421,6 +486,21 @@ regioes_acima_90 = dados_vacinas %>%
   summarise(min_coverage = min(valor)) %>%
   filter(min_coverage > 90)
 
+#Municípios ------
+dados_vacinas = IEPS_Completo_Municipio_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal")) %>% 
+  select(ano, regiao, nomemun, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na()
+
+#Selecionar municipios com cobertura vacinal mínima de 90%
+municipios_acima_90 = dados_vacinas %>% 
+  filter(ano >= ymd("2015-01-01") & ano <= ymd("2022-01-01")) %>% 
+  group_by(nomemun, nome_dos_indicadores) %>% 
+  summarise(min_coverage = min(valor)) %>%
+  filter(min_coverage > 90)
 ```
 
 Quais foram as regiões que mais tiveram redução da cobertura vacinal por
@@ -461,6 +541,43 @@ bcg_top5_reduz_2016
 bcg_top5_reduz_2020
 ```
 
+E os municípios?
+```{r fig.height=10, fig.width=15}
+# Calcular a variação anual e filtrar variações negativas
+variacoes_negativas <- dados_vacinas %>%
+    drop_na() %>% 
+  arrange(nomemun, nome_dos_indicadores, ano) %>%
+  group_by(nomemun, nome_dos_indicadores) %>%
+  mutate(variacao_anual = valor - lag(valor)) %>%
+  group_by(nome_dos_indicadores) %>% 
+  arrange(nome_dos_indicadores, variacao_anual)  %>% 
+  filter(variacao_anual<0)
+
+#Top 5 regiões com maior queda da cobertura vacinal
+variacoes_negativas_top5_mun = variacoes_negativas %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+top5_reduz_2016_mun = variacoes_negativas %>% 
+  filter(ano == "2016-01-01")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+top5_reduz_2020_mun = variacoes_negativas %>% 
+  filter(ano == "2020-01-01")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+
+#Top 5 regiões com maior queda da cobertura de BCG
+bcg_top5_reduz_2016_mun = variacoes_negativas %>% 
+  filter(ano == "2016-01-01", 
+         nome_dos_indicadores == "BCG")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+bcg_top5_reduz_2020_mun = variacoes_negativas %>% 
+  filter(ano == "2020-01-01", 
+         nome_dos_indicadores == "BCG")  %>% 
+  slice_min(n = 5, order_by = variacao_anual)
+
+bcg_top5_reduz_2016_mun
+bcg_top5_reduz_2020_mun
+```
+
+
 ```{r fig.height=7, fig.width=12}
 vacinas_estado_sp = IEPS_Completo_filtrado_SP %>% 
   filter(bloco == "Cobertura vacinal") %>% 
@@ -499,7 +616,7 @@ vacinas_estado_sp %>%
 vacinas_estado_sp
 ```
 
-Análise por região
+#Análise por microrregião
 
 ## Densidade
 
@@ -707,7 +824,228 @@ bcg_queda_2020_linhas %>%
     ggsave(file = here("Figuras", "vacinas_queda_2020_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
 ```
 
+#Análise por municipio
+
+## Densidade
+
+```{r fig.height=10, fig.width=15}
+IEPS_Completo_Municipio_SP_vacinas_ridge = IEPS_Completo_Municipio_SP %>% 
+  filter(str_detect(variavel, "cob_vac_")) %>% 
+  drop_na(valor) %>% 
+  mutate(ano = as.character(ano)) %>% 
+  ggplot() +
+  aes(x = valor, y = fct_rev(ano), fill = ano) +
+  geom_density_ridges(stat = "binline", bins = 10) +
+  scale_fill_manual(values = colorRampPalette(c("#65ADC2", "purple"))(15)) +
+  theme(legend.position = "none",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        strip.text.x = element_text(size = 15, face = "bold"),
+        panel.spacing=unit(2, "lines")) +
+  labs(title = "Cobertura vacinal, por município",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       y = "",
+       x = "Cobertura vacinal (%)") +
+    facet_wrap(~nome_dos_indicadores, scales = "free_x", nrow = 2)
+  
+IEPS_Completo_Municipio_SP_vacinas_ridge %>% 
+    ggsave(file = here("Figuras", "Vacinas_Municipios_SP_2010_2022_densidade.png"), width = 15, height = 15)
+
+IEPS_Completo_Municipio_SP_vacinas_ridge
+```
+
+## Boxplots
+
+```{r fig.height=10, fig.width=15}
+ IEPS_Completo_Municipio_SP_vacinas_boxplot = IEPS_Completo_Municipio_SP %>% 
+  filter(str_detect(variavel, "cob_vac_")) %>% 
+  drop_na() %>% 
+    mutate(ano = as.character(ano)) %>% 
+  ggplot() +
+  aes(x = valor, y = fct_rev(ano), fill = ano) +
+  geom_jitter(aes(label = no_regiao, color = valor),
+              alpha = 0.2,
+              na.rm = T) +
+  geom_boxplot(outliers = F) +
+  scale_fill_manual(values = colorRampPalette(c("#65ADC2", "purple"))(15)) +
+  theme(legend.position = "none",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        strip.text.x = element_text(size = 15, face = "bold"),
+        panel.spacing=unit(2, "lines")) +
+  labs(title = "Cobertura vacinal, por municipio",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       y = "",
+       x = "Cobertura vacinal (%)") +
+    facet_wrap(~nome_dos_indicadores, scales = "free_x", nrow = 2)
+
+
+IEPS_Completo_Municipio_SP_vacinas_boxplot %>% 
+    ggsave(file = here("Figuras", "Vacinas_Municipios_SP_2010_2022_boxplot.png"), width = 20, height = 12)
+
+IEPS_Completo_Municipio_SP_vacinas_boxplot  
+```
+
+Boxplot interativo
+```{r}
+IEPS_Completo_Regiao_SP_vacinas_BCG_boxplot = IEPS_Completo_Regiao_SP_vacinas %>% 
+  filter(nome_dos_indicadores == "BCG") %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = fct_rev(ano), y = valor, fill = ano) +
+  geom_boxplot(outliers = F) +
+  geom_jitter(aes(label = no_regiao, color = valor),
+              alpha = 0.2,
+              na.rm = T) +
+  scale_fill_manual(values = colorRampPalette(c("#65ADC2", "purple"))(15)) +
+    theme(legend.position = "none",
+        text = element_text(size = 12, color = "black"),
+        plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 15),
+        plot.caption = element_text(size = 10),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        strip.text.x = element_text(size = 10, face = "bold"),
+        panel.spacing=unit(2, "lines")) +
+  labs(title = "Cobertura vacinal - BCG",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       y = "",
+       x = "Cobertura vacinal (%)")  
+
+ggplotly(IEPS_Completo_Regiao_SP_vacinas_BCG_boxplot)
+```
+
+## Gráfico de linhas
+
+```{r fig.height=10, fig.width=15}
+regioes_acima_90_vacina_linhas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
+         no_regiao %in% unique(regioes_acima_90$no_regiao)) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = ano, y = valor, group = no_regiao) +
+  geom_line(aes(color = no_regiao),
+            size = 2) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+    theme(legend.position = "top",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal no estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Microrregião",
+       y = "Cobertura vacinal (%)",
+       x = "") +
+  facet_wrap(~nome_dos_indicadores, scales = "free") +
+  scale_shape_manual(values = c(16)) +
+  scale_color_cosmic()
+
+regioes_acima_90_vacina_linhas
+regioes_acima_90_vacina_linhas %>% 
+    ggsave(file = here("Figuras", "vacinas_acima_90_regioes_estado_sp_2010_2022_linhas.png"), width = 15, height = 10)
+
+```
+
+```{r fig.height=5, fig.width=10}
+bcg_queda_2016_linhas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
+         str_detect(nome_dos_indicadores, "BCG"),
+         no_regiao %in% bcg_top5_reduz_2016$no_regiao) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = ano, y = valor, group = no_regiao) +
+  geom_line(aes(color = no_regiao),
+            size = 2) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+    theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG no estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Microrregião",
+       y = "Cobertura vacinal (%)",
+       x = "") +
+  scale_color_cosmic()
+bcg_queda_2016_linhas
+
+bcg_queda_2016_linhas %>% 
+    ggsave(file = here("Figuras", "vacinas_queda_2016_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
+
+```
+
+2020
+
+```{r fig.height=5, fig.width=10}
+bcg_queda_2020_linhas = IEPS_Completo_Regiao_SP %>% 
+  filter(str_detect(nome_dos_indicadores, "Cobertura Vacinal"),
+         str_detect(nome_dos_indicadores, "BCG"),
+         no_regiao %in% bcg_top5_reduz_2020$no_regiao) %>% 
+  select(ano, regiao, no_regiao, nome_dos_indicadores, valor) %>% 
+  mutate(valor = round(valor, 2),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, "Cobertura Vacinal de ", ""),
+         nome_dos_indicadores = str_replace(nome_dos_indicadores, " \\(\\%\\)", "")) %>% 
+  drop_na() %>% 
+  ggplot() +
+  aes(x = ano, y = valor, group = no_regiao) +
+  geom_line(aes(color = no_regiao),
+            size = 2) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%y") +
+    theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG no estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Microrregião",
+       y = "Cobertura vacinal (%)",
+       x = "") +
+  scale_color_cosmic()
+bcg_queda_2020_linhas
+
+bcg_queda_2020_linhas %>% 
+    ggsave(file = here("Figuras", "vacinas_queda_2020_regioes_estado_sp_2010_2022_linhas.png"), width = 10, height = 5)
+```
+
+
+
+
+
+
+
 # PCA
+# Microrregião
 
 ```{r}
 library(tidyverse)
@@ -726,184 +1064,21 @@ library(ggExtra)
 library(FactoMineR)
 ```
 
-## Microrregião: Cobertura vacinal somente
-
-```{r}
-pca_microrregiao = IEPS_Completo_2010_2022_selecionados_SP %>% 
-  filter(nivel == "Região",
-         ano == "2020") %>%
-  select(no_regiao, cob_vac_bcg:cob_vac_penta) %>% 
-  column_to_rownames("no_regiao")
-
-
-pca_microrregiao_matrix = pca_microrregiao %>% 
-  as.matrix()
-
-pca_microrregiao_ann = IEPS_Completo_2010_2022_selecionados_SP %>% 
-  filter(nivel == "Região",
-         ano == "2020") %>% 
-  select(no_regiao, pop) %>% 
-    column_to_rownames("no_regiao")
-  
-# Delete columns with near 0 variance
-nearZeroVarCols <- nearZeroVar(pca_microrregiao_matrix, saveMetrics = TRUE)
-pca_microrregiao_matrix_pca <- pca_microrregiao_matrix[, !nearZeroVarCols$nzv]
-pca_res <- prcomp(pca_microrregiao_matrix_pca, scale. = T)
-
-# Correlation plot ----
-corr_matrix = cor(pca_microrregiao_matrix_pca %>% scale()) 
-var <- get_pca_var(pca_res)
-
-corrplot = ggcorrplot(corr_matrix, hc.order = TRUE) +
-  theme(axis.text.x = element_text(angle = 90, size = 10),
-        axis.text.y = element_text(size = 10))
-corrplot
-
-
-#PCA ----
-data.pca = prcomp(corr_matrix) #PCA
-summary(corr_matrix) #Retornar PCs
-
-#Scree plot ----
-scree_plot = fviz_eig(data.pca, 
-                      addlabels = TRUE,
-                      ylim = c(0, 100)) +
-  geom_col(color = "#00AFBB", fill = "#00AFBB") +
-  theme_classic()
-
-scree_plot
-
-# Loadings plot ----
-options(ggrepel.max.overlaps = Inf)
-
-circle_contrib= fviz_pca_var(pca_res, col.var = "cos2",
-                              gradient.cols = c("gray50", "purple"),
-                              select.var= list(cos2 = 20), 
-                              repel = T, 
-                              labelsize = 4,
-                              col.circle = NA) +
-  theme_void()
-
-circle_contrib
-
-circle_contrib %>% 
-  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Loadings.png"), 
-         width = 5, 
-         height = 5)
-
-```
-
-```{r fig.width = 10, fig.height = 6}
-# Cluster ------
-#Determine the number of clusters
-pca_scores <- data.frame(pca_res$x[, 1:2])
-fviz_nbclust(pca_scores,  
-                     FUNcluster = kmeans,
-                     method = "wss")
-
-
-set.seed(666) # Set seed for randomization
-cluster_model <- kmeans(pca_res$x[, 1:2], centers = 2)  #Set the number of clusters
-
-pca_microrregiao$cluster <- as.factor(cluster_model$cluster)
-pca_microrregiao = pca_microrregiao %>% 
-  rownames_to_column("id")
-
-
-# Plot ------
-pca_plot_knn_cluster = autoplot(pca_res, 
-        data = pca_microrregiao, 
-        colour = 'cluster')  +
-  stat_ellipse(aes(color = cluster, 
-                   fill = cluster), 
-               geom = "polygon", 
-               alpha = 0.1, 
-               linetype = 1,
-               size = 0.3,
-               type = "t") +
-  geom_point(aes(fill = cluster),
-             colour="black",
-             pch=21, 
-             size=5) +
-  labs(title = "Microrregiões paulistas, 2020") + 
-  theme(text = element_text(color = "black")) +
-  geom_label_repel(aes(label = id,
-                      segment.colour= "black"),
-                  box.padding = 0.3,
-                  size = 3) 
-  
-pca_plot_knn_cluster
-pca_plot_knn_cluster_marginal = ggMarginal(
-  pca_plot_knn_cluster,
-  groupFill = T,
-  groupColour = T)
-pca_plot_knn_cluster_marginal
-
-pca_plot_knn_cluster %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020.png"), width = 10, height = 6)
-
-```
-
-```{r fig.width = 10, fig.height = 6}
-ggthemr("fresh", spacing = 1)
-swatch()
-"#111111" "#65ADC2" "#233B43" "#E84646" "#C29365" "#362C21" "#316675" "#168E7F" "#109B37"
-
-
-pca_plot_knn_cluster_gradient = autoplot(pca_res, 
-        data = pca_microrregiao)  +
-  geom_point(aes(fill = cob_vac_polio),
-             colour="black",
-             pch=21, 
-             size=5) +
-  labs(title = "Microrregiões paulistas, 2020",
-       fill = "Cobertura vacinal (%)") + 
-  theme(text = element_text(color = "black"),
-        legend.position = "top")  +
-  scale_fill_gradient(low = "#E84646", high = "#65ADC2")
-
-pca_plot_knn_cluster_gradient
-
-pca_plot_knn_cluster_gradient %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Polio.png"), width = 10, height = 6)
-```
-
-```{r fig.width = 10, fig.height = 6}
-pca_plot_knn_cluster_pop = autoplot(pca_res, 
-        data = pca_microrregiao %>% 
-          bind_cols(pca_microrregiao_ann) %>% 
-          rownames_to_column("id"))  +
-  geom_point(aes(fill = pop),
-             colour="black",
-             pch=21, 
-             size=5) +
-  labs(title = "Microrregiões paulistas, 2020",
-       fill = "População") + 
-  theme(text = element_text(color = "black"),
-        legend.position = "right")  +
-  scale_fill_gradient(trans = "log10", 
-                    low = "white", high = "purple") +
-  geom_label_repel(aes(label = id,
-                      segment.colour= "black"),
-                  box.padding = 0.3,
-                  size = 3) 
-
-pca_plot_knn_cluster_pop
-
-pca_plot_knn_cluster_pop %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Pop.png"), width = 10, height = 6)
-```
-
-
 
 ## Microrregião: Selecionados
 
 ```{r}
-
+#Imputs
 ano_selec = "2020"
+ano_selec_ymd = ymd("2020-01-01")
+row_names = "no_regiao"
+nivel_selec = "Região"
 
-
-pca_microrregiao = IEPS_Completo_2010_2022_selecionados_SP %>% 
-  filter(nivel == "Região",
+#
+pca_dados = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == nivel_selec,
          ano == ano_selec) %>%
-  column_to_rownames("no_regiao") %>% 
+  column_to_rownames(row_names) %>% 
   select(cob_ab:cob_vac_penta, 
          tx_mort_aj_cens:pct_desp_recp_saude_mun, 
          desp_tot_saude_pc_mun_def,
@@ -911,36 +1086,33 @@ pca_microrregiao = IEPS_Completo_2010_2022_selecionados_SP %>%
          ideb_5ano:pop, 
          pct_pop_fem:pct_pop_masc)
 
-pca_microrregiao_matrix = pca_microrregiao %>% 
+pca_dados_matrix = pca_dados %>% 
   as.matrix()
 
-dim(pca_microrregiao_matrix)
+dim(pca_dados_matrix)
 
-pca_microrregiao_ann = IEPS_Completo_2010_2022_selecionados_SP %>% 
-  filter(nivel == "Região",
-         ano == "2020") %>% 
-  select(no_regiao, pop) %>% 
+pca_dados_ann = IEPS_Completo_2010_2022_selecionados_SP %>% 
+  filter(nivel == nivel_selec,
+         ano == ano_selec) %>% 
+  select(row_names, pop) %>% 
   mutate(porte_municipio = case_when(pop <= 20000 ~ "Pequeno Porte I",
                                      pop <= 50000 ~ "Pequeno Porte II",
                                      pop <= 100000 ~ "Médio Porte",
                                      pop <= 900000 ~ "Grande Porte",
                                      TRUE ~ "Metrópole"),
-         ID = no_regiao) %>% 
+         ID = row_names) %>% 
   select(-pop) %>% 
-    column_to_rownames("no_regiao")
+    column_to_rownames(row_names)
 ```
 
 
-```{r fig.width = 10, fig.height = 10}
+```{r fig.width = 15, fig.height = 5}
 # Delete columns with near 0 variance
-nearZeroVarCols <- nearZeroVar(pca_microrregiao_matrix, saveMetrics = TRUE)
-pca_microrregiao_matrix_pca <- pca_microrregiao_matrix[, !nearZeroVarCols$nzv]
-pca_res <- prcomp(pca_microrregiao_matrix_pca, scale. = T)
+nearZeroVarCols <- nearZeroVar(pca_dados_matrix, saveMetrics = TRUE)
+pca_dados_matrix_pca <- pca_dados_matrix[, !nearZeroVarCols$nzv]
+pca_res <- prcomp(pca_dados_matrix_pca, scale. = T)
 
-# Correlation plot ----
-corr_matrix = cor(pca_microrregiao_matrix_pca %>% scale()) 
-var <- get_pca_var(pca_res)
-
+#Selecionar variáveis de interesse
 corr_matrix_selec = corr_matrix %>% 
   as.data.frame() %>% 
   rownames_to_column("id") %>% 
@@ -948,20 +1120,67 @@ corr_matrix_selec = corr_matrix %>%
   column_to_rownames("id") %>% 
   as.matrix()
 
-corrplot_selec = corrplot(corr_matrix_selec, is.corr=TRUE,
-         tl.col = "black",
-         method = "color",
-          col=colorRampPalette(c("blue","white","red"))(9)) +
-    theme(axis.text.x = element_text(angle = 90, size = 10),
-        axis.text.y = element_text(size = 10))
+# Correlation plot ----
+corr_matrix = cor(pca_dados_matrix_pca %>% scale()) 
+var <- get_pca_var(pca_res)
+p.mat = cor_pmat(pca_dados_matrix_pca %>% scale())
 
-corrplot = ggcorrplot(corr_matrix_selec, hc.order = TRUE) +
-  theme(axis.text.x = element_text(angle = 90, size = 10),
-        axis.text.y = element_text(size = 10))
-corrplot
+p.mat_2 = cor_pmat(corr_matrix_selec %>% scale()) %>% 
+  as.data.frame() %>% 
+  rownames_to_column("id") %>% 
+  inner_join(corr_matrix_selec %>% as.data.frame() %>% rownames_to_column("id") %>% select("id"), by = "id") %>% 
+  column_to_rownames("id") %>% 
+  as.matrix()
+
+
+
+#Selecionados
+png(file = here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec, "_Selecionados_Corrplot.png")), 
+    width = 15, height = 5,
+    units = "in",
+    res = 300)
+
+corrplot(round(corr_matrix_selec, 2),
+         is.corr = TRUE,
+         tl.col = "black",
+         title = "Cobertura vacinal e indicadores sociais, economicos, demográficos e de saúde",
+         cex.main = 2,
+         method = "color",
+         p.mat = p.mat_2,
+         tl.srt = 45,
+         sig.level = c(0.05),
+         mar=c(1,0,4,0),
+         addCoef.col = 'black',
+         number.cex = 0.6,
+         insig = "blank",
+         col = colorRampPalette(c("#65ADC2", "white", "#E84646"))(11))
+
+dev.off()
+
+
+```
+
+
+```{r fig.width = 10, fig.height = 10}
+#Todos
+corrplot = ggcorrplot(corr_matrix,
+                      hc.order = TRUE,
+                      method = "circle",
+                      type = "full",
+                      ggtheme = NULL,
+                      outline.col = "white",
+                      p.mat = p.mat,
+         insig = "blank",
+
+                      sig.level = 0.05,
+                      colors = c("#65ADC2", "white", "#E84646")) +
+  theme(axis.text.x = element_text(angle = 45, size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(title = "Cobertura vacinal e indicadores sociais, economicos, demográficos e de saúde") +
+  theme(plot.title = element_text(size = 15, face = "bold"))
 
 corrplot %>% 
-  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Corrplot.png"), width = 10, height = 10)
+  ggsave(file = here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec, "_TodosIndicadores_Corrplot.png")), width = 15, height = 10)
 
 ```
 
@@ -980,7 +1199,7 @@ scree_plot = fviz_eig(data.pca,
 scree_plot
 
 scree_plot %>% 
-  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Screeplot.png"), 
+  ggsave(file = here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec, "_Screeplot.png")), 
          width = 5,
          height = 3)
 ```
@@ -1000,7 +1219,7 @@ circle_contrib= fviz_pca_var(pca_res, col.var = "cos2",
 circle_contrib
 
 circle_contrib %>% 
-  ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Loadings.png"), 
+  ggsave(file = here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec, "_Loadings.png")), 
          width = 5, 
          height = 5)
 
@@ -1016,10 +1235,10 @@ fviz_nbclust(pca_scores,
 
 
 set.seed(666) # Set seed for randomization
-cluster_model <- kmeans(pca_res$x[, 1:2], centers = 3)  #Set the number of clusters
+cluster_model <- kmeans(pca_res$x[, 1:2], centers = 2)  #Set the number of clusters
 
-pca_microrregiao$cluster <- as.factor(cluster_model$cluster)
-pca_microrregiao = pca_microrregiao %>% 
+pca_dados$cluster <- as.factor(cluster_model$cluster)
+pca_dados = pca_dados %>% 
   rownames_to_column("id")
 ```
 
@@ -1027,7 +1246,7 @@ pca_microrregiao = pca_microrregiao %>%
 ```{r fig.width = 10, fig.height = 6}
 # Plot ------
 pca_plot_knn_cluster = autoplot(pca_res, 
-        data = pca_microrregiao, 
+        data = pca_dados, 
         colour = 'cluster')  +
   stat_ellipse(aes(color = cluster, 
                    fill = cluster), 
@@ -1040,20 +1259,20 @@ pca_plot_knn_cluster = autoplot(pca_res,
                  size = pop),
              colour="black",
              pch=21) +
-  labs(title = "Microrregiões paulistas, 2020") + 
+  labs(title = paste0(nivel_selec, "paulista, ", ano_selec)) + 
   theme(text = element_text(color = "black")) +
   geom_label_repel(aes(label = id,
                       segment.colour= "black"),
                   box.padding = 0.3,
                   size = 3)  +
-  scale_size_continuous(range = c(4,8))
+  scale_size_continuous(range = c(2,8))
 pca_plot_knn_cluster_marginal = ggMarginal(
   pca_plot_knn_cluster,
   groupFill = T,
   groupColour = T)
 pca_plot_knn_cluster_marginal
 
-pca_plot_knn_cluster_marginal %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Clusters.png"), width = 10, height = 6)
+pca_plot_knn_cluster_marginal %>% ggsave(file = here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec, "_Clusters.png")), width = 10, height = 6)
 
 ```
 
@@ -1061,22 +1280,42 @@ pca_plot_knn_cluster_marginal %>% ggsave(file = here("Figuras", "PCA_Microrregio
 ggthemr("fresh", spacing = 1)
 swatch()
 
+#Polio ----
 pca_plot_knn_cluster_gradient = autoplot(pca_res, 
-        data = pca_microrregiao)  +
+        data = pca_dados)  +
   geom_point(aes(fill = cob_vac_polio,
                  size = pop),
              colour="black",
              pch=21) +
-  labs(title = "Microrregiões paulistas, 2020") + 
+  labs(title = paste0(nivel_selec, "paulista, ", ano_selec)) + 
   theme(text = element_text(color = "black"),
         legend.position = "right")  +
   scale_fill_gradient(low = "#E84646", high = "#65ADC2") +
-    scale_size_continuous(range = c(4,8))
+    scale_size_continuous(range = c(2,8))
 
 
 pca_plot_knn_cluster_gradient
 
-pca_plot_knn_cluster_gradient %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Polio.png"), width = 10, height = 6)
+pca_plot_knn_cluster_gradient %>% ggsave(file =  here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec,"_Polio.png")), width = 10, height = 6)
+
+#BCG -----
+
+pca_plot_knn_cluster_gradient = autoplot(pca_res, 
+        data = pca_dados)  +
+  geom_point(aes(fill = cob_vac_bcg,
+                 size = pop),
+             colour="black",
+             pch=21) +
+  labs(title = paste0(nivel_selec, "paulista, ", ano_selec)) + 
+  theme(text = element_text(color = "black"),
+        legend.position = "right")  +
+  scale_fill_gradient(low = "#E84646", high = "#65ADC2") +
+    scale_size_continuous(range = c(2,8))
+
+
+pca_plot_knn_cluster_gradient
+
+pca_plot_knn_cluster_gradient %>% ggsave(file =  here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec,"_BCG.png")), width = 10, height = 6)
 ```
 
 
@@ -1088,7 +1327,7 @@ grp <- as.factor(res.km$cluster)
 pca_plot_knn_cluster_biplot = fviz_pca_biplot(pca_res, 
                 col.var = "black",
                 geom.var = c("point", "text"),
-                fill.ind = pca_microrregiao$cluster,
+                fill.ind = pca_dados$cluster,
                 col.ind = "black",
                 pointshape = 21,
                 palette = c("#65ADC2", "#233B43", "#E84646"),
@@ -1101,31 +1340,31 @@ pca_plot_knn_cluster_biplot = fviz_pca_biplot(pca_res,
 
 pca_plot_knn_cluster_biplot
 
-pca_plot_knn_cluster_biplot %>% ggsave(file = here("Figuras", "PCA_Microrregioes_2020_Selecionados_Biplot.png"), width = 10, height = 6)
+pca_plot_knn_cluster_biplot %>% ggsave(file = here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec,"_Biplot.png")), width = 10, height = 6)
 ```
 
 
-# Correlação: Dispersão
+## Microrregião: Dispersão
 ```{r fig.width = 15, fig.height = 10}
 pop_regiao = IEPS_Completo_2010_2022_selecionados_SP %>%
-  filter(nivel == "Região") %>% 
-    mutate(porte_municipio = case_when(pop <= 20000 ~ "Pequeno Porte I",
+  filter(nivel == nivel_selec) %>% 
+    mutate(porte_regiao = case_when(pop <= 20000 ~ "Pequeno Porte I",
                                      pop <= 50000 ~ "Pequeno Porte II",
                                      pop <= 100000 ~ "Médio Porte",
                                      pop <= 900000 ~ "Grande Porte",
                                      TRUE ~ "Metrópole")) %>% 
-  select(no_regiao, porte_municipio)
+  select(row_names, porte_municipio)
 
 
 dados_vacinas = IEPS_Completo_2010_2022_selecionados_SP %>% 
-  filter(nivel == "Região") %>%
-  select(no_regiao, ano, cob_ab:cob_vac_penta, 
+  filter(nivel == nivel_selec) %>%
+  select(row_names, ano, cob_ab:cob_vac_penta, 
          tx_mort_aj_cens:pct_desp_recp_saude_mun, 
          desp_tot_saude_pc_mun_def,
          desp_recp_saude_pc_mun_def, 
          ideb_5ano:pop, 
          pct_pop_fem:pct_pop_masc) %>% 
-  inner_join(pop_regiao, by = "no_regiao") %>% 
+  inner_join(pop_regiao, by = row_names) %>% 
   distinct()
 ```
 
@@ -1136,7 +1375,7 @@ Correlação ideb e vacina
 # library(ggpmisc)
 cor_vac_ideb = dados_vacinas %>% 
   filter(!ano == ymd("2022-01-01")) %>% 
-  select(c("no_regiao", "ideb_5ano", "ideb_9ano", "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  select(c(row_names, "ideb_5ano", "ideb_9ano", "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
   ggplot(.) +
   aes(x = ideb_5ano, y = cob_vac_bcg) +
   # geom_point(color = "black", 
@@ -1174,7 +1413,7 @@ cor_vac_ideb = dados_vacinas %>%
 cor_vac_ideb
 
 cor_vac_ideb %>% 
-  ggsave(file = here("Figuras", "Microrregioes_2010_2020_BCG_vs_IDEB.png"), 
+  ggsave(file = here("Figuras", here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec,"_2010_2020_BCG_vs_IDEB.png")) 
          width = 20,
          height = 10)
 
@@ -1277,7 +1516,7 @@ cor_vac_txmortes %>%
          width = 20, height = 10)
 ```
 
-# PCA
+# Município
 
 ```{r}
 library(tidyverse)
@@ -1304,7 +1543,8 @@ library(FactoMineR)
 ```{r}
 
 ano_selec = "2020-01-01"
-
+nivel_selec = "Município"
+row_names = "nomemun"
 
 pca_municipio = IEPS_Completo_2010_2022_selecionados_SP %>% 
   filter(nivel == "Município",
@@ -1337,7 +1577,15 @@ pca_municipio_ann = IEPS_Completo_2010_2022_selecionados_SP %>%
 ```
 
 
-```{r fig.width = 10, fig.height = 10}
+```{r}
+pca_municipio %>% 
+  ggplot()
+```
+
+
+
+
+```{r fig.width = 12, fig.height = 10}
 # Delete columns with near 0 variance
 nearZeroVarCols <- nearZeroVar(pca_municipio_matrix, saveMetrics = TRUE)
 pca_municipio_matrix_pca <- pca_municipio_matrix[, !nearZeroVarCols$nzv]
@@ -1354,20 +1602,63 @@ corr_matrix_selec = corr_matrix %>%
   column_to_rownames("id") %>% 
   as.matrix()
 
-corrplot_selec = corrplot(corr_matrix_selec, is.corr=TRUE,
-         tl.col = "black",
-         method = "color",
-          col=colorRampPalette(c("blue","white","red"))(9)) +
-    theme(axis.text.x = element_text(angle = 90, size = 10),
-        axis.text.y = element_text(size = 10))
 
-corrplot = ggcorrplot(corr_matrix, hc.order = TRUE) +
-  theme(axis.text.x = element_text(angle = 90, size = 10),
-        axis.text.y = element_text(size = 10))
+p.mat = cor_pmat(pca_municipio_matrix_pca %>% scale())
+
+p.mat_2 = cor_pmat(corr_matrix_selec %>% scale()) %>% 
+  as.data.frame() %>% 
+  rownames_to_column("id") %>% 
+  inner_join(corr_matrix_selec %>% as.data.frame() %>% rownames_to_column("id") %>% select("id"), by = "id") %>% 
+  column_to_rownames("id") %>% 
+  as.matrix()
+
+
+
+#Selecionados
+png(file = here("Figuras", paste0("PCA_", nivel_selec ,"_", ano_selec, "_Selecionados_Corrplot.png")), 
+    width = 15, height = 5,
+    units = "in",
+    res = 300)
+
+corrplot(round(corr_matrix_selec, 2),
+         is.corr = TRUE,
+         tl.col = "black",
+         title = "Cobertura vacinal e indicadores sociais, economicos, demográficos e de saúde",
+         cex.main = 2,
+         method = "color",
+         p.mat = p.mat_2,
+         tl.srt = 45,
+         sig.level = c(0.05),
+         mar=c(1,0,4,0),
+         addCoef.col = 'black',
+         number.cex = 0.6,
+         insig = "blank",
+         col = colorRampPalette(c("#65ADC2", "white", "#E84646"))(11))
+
+dev.off()
+```
+
+
+```{r fig.width = 12, fig.height = 10}
+#Todos os indicadores
+
+corrplot = ggcorrplot(corr_matrix, hc.order = TRUE,
+           method = "circle",
+           type = "full",
+           ggtheme = NULL,
+           outline.col = "white", 
+           p.mat = p.mat,
+           sig.level = 0.05, 
+           colors = c("#65ADC2", "white", "#E84646")) +
+  theme(axis.text.x = element_text(angle = 45, size = 10),
+        axis.text.y = element_text(size = 10)) +
+  labs(title = "Cobertura vacinal e indicadores sociais, economicos, demográficos e de saúde") +
+  theme(plot.title = element_text(size = 15, face = "bold"))
+
 corrplot
 
 corrplot %>% 
-  ggsave(file = here("Figuras", "PCA_Municípios_2020_Selecionados_Corrplot.png"), width = 10, height = 10)
+  ggsave(file = here("Figuras", "PCA_Municípios_2020_Corrplot.png"), width = 12, height = 10)
 
 ```
 
@@ -1634,7 +1925,7 @@ cor_vac_idhm = dados_vacinas %>%
                    size = 3.5,
                    label.x = 5, 
                    label.y = 120,
-                   mapping = use_label(c("R", "R2", "P", "n"))) +
+                   mapping = use_label(c("R", "P"))) +
   theme(legend.position = "right",
         text = element_text(size = 15, color = "black"),
         plot.title = element_text(size = 25),
@@ -1658,19 +1949,17 @@ cor_vac_idhm %>%
          width = 20, height = 10)
 ```
 
-Taxa de mortes evitaveis e vacina
+Taxa de medicos e vacina
 
 ```{r fig.width = 20, fig.height = 10}
 
-variavel_interesse = "tx_mort_evit_aj_cens"
+variavel_interesse = "tx_med"
 
-cor_vac_txmortes = dados_vacinas %>% 
+cor_vac_txmed = dados_vacinas %>% 
   filter(!ano == ymd("2022-01-01")) %>% 
   select(c("nomemun", variavel_interesse, "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
   ggplot(.) +
-  aes(x = variavel_interesse, y = cob_vac_bcg) +
-  # geom_point(color = "black", 
-  #            shape = "circle") +
+  aes(x = tx_med, y = cob_vac_bcg) +
   geom_point(aes(fill = porte_municipio, 
                  colour = porte_municipio,
                  size = pop), 
@@ -1678,13 +1967,13 @@ cor_vac_txmortes = dados_vacinas %>%
   geom_smooth(method = "lm",
               alpha = 0.1,
               se = T) +
-  scale_y_continuous(expand = expansion(add = 20)) +
-      scale_size_continuous(range = c(2,8)) +
+  #scale_y_continuous(expand = expansion(add = 10)) +
+  scale_size_continuous(range = c(2,8)) +
   stat_correlation(method = "pearson",
                    size = 3.5,
                    label.x = 5, 
-                   label.y = 120,
-                   mapping = use_label(c("R", "R2", "P", "n"))) +
+                   label.y = 50,
+                   mapping = use_label(c("R", "P"))) +
   theme(legend.position = "right",
         text = element_text(size = 15, color = "black"),
         plot.title = element_text(size = 25),
@@ -1693,24 +1982,108 @@ cor_vac_txmortes = dados_vacinas %>%
         plot.margin = unit(c(1,1,1,1), "cm"),
         legend.text = element_text(size = 15),
         strip.text.x = element_text(size = 15, face = "plain"))  +
-  labs(title = "Cobertura vacinal da BCG e Taxa de mortes evitaveis (CENSO), municípios do estado de São Paulo",
+  labs(title = "Cobertura vacinal da BCG e Taxa de medicos (CENSO), municípios do estado de São Paulo",
        subtitle = "Período de 2010 a 2022",
        caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
        color = "Porte municipal",
-       y = "Taxa de mortes evitaveis (CENSO)",
-       x = "IDHM") +
+       y = "Cobertura vainal",
+       x = "Taxa de medicos (1.000 hab)") +
   facet_wrap(~ano, scales = "free", nrow = 2)
 
-cor_vac_txmortes
+cor_vac_txmed
 
-cor_vac_txmortes %>% 
-  ggsave(file = here("Figuras", "Municípios_2010_2020_BCG_vs_Taxa_Mortes_Evitaveis.png"), 
+cor_vac_txmed %>% 
+  ggsave(file = here("Figuras", "Municípios_2010_2020_BCG_vs_Taxa_Medicos.png"), 
+         width = 20, height = 10)
+```
+
+
+```{r fig.width = 20, fig.height = 10}
+variavel_interesse = "tx_med"
+
+cor_vac_txmed = dados_vacinas %>% 
+  filter(!ano == ymd("2022-01-01")) %>% 
+  select(c("nomemun", variavel_interesse, "cob_vac_bcg", "ano", "porte_municipio", "pop")) %>% 
+  mutate(tx_med = scale(tx_med)) %>% 
+  ggplot(.) +
+  aes(x = tx_med, y = cob_vac_bcg) +
+  geom_point(aes(fill = porte_municipio, 
+                 colour = porte_municipio,
+                 size = pop), 
+             shape = "circle") +
+  geom_smooth(method = "lm",
+              alpha = 0.1,
+              se = T) +
+  #scale_y_continuous(expand = expansion(add = 10)) +
+  scale_size_continuous(range = c(2,8)) +
+  stat_correlation(method = "spearman",
+                   size = 3.5,
+                   label.x = 5, 
+                   label.y = 50,
+                   mapping = use_label(c("R", "P"))) +
+  theme(legend.position = "right",
+        text = element_text(size = 15, color = "black"),
+        plot.title = element_text(size = 25),
+        plot.subtitle = element_text(size = 20),
+        plot.caption = element_text(size = 15),
+        plot.margin = unit(c(1,1,1,1), "cm"),
+        legend.text = element_text(size = 15),
+        strip.text.x = element_text(size = 15, face = "plain"))  +
+  labs(title = "Cobertura vacinal da BCG e Taxa normalizada de medicos (CENSO), municípios do estado de São Paulo",
+       subtitle = "Período de 2010 a 2022",
+       caption = "Fonte: IEPS, PNI, TabNet/DATASUS",
+       color = "Porte municipal",
+       y = "Cobertura vacinal",
+       x = "Taxa de medicos (1.000 hab, normalizado)") +
+  facet_wrap(~ano, scales = "free", nrow = 2)
+
+cor_vac_txmed
+
+cor_vac_txmed %>% 
+  ggsave(file = here("Figuras", "Municípios_2010_2020_BCG_vs_Taxa_Medicos_normalizada.png"), 
          width = 20, height = 10)
 ```
 
 
 
-```{r}
 
+
+```{r fig.width = 20, fig.height = 10}
+distributions_selec = IEPS_Completo_Regiao_SP %>% 
+  filter(ano == ymd("2020-01-01")) %>%
+  drop_na(valor) %>% 
+  group_by(variavel) %>% 
+  mutate(valor = if_else(str_detect(variavel, "pop"), log10(valor), valor),
+         valor = if_else(!str_detect(variavel, "pop"), scale(valor), valor)) %>% 
+  ggplot() +
+  aes(x = valor) +
+  geom_density(fill = "#65ADC2",
+               color = "#65ADC2") +
+  facet_wrap(~variavel, scales = "free")
+
+distributions_selec %>% 
+  ggsave(file = here("Figuras", "Região_2020_distribuicao_var_selecionadas.png"), width = 20, height = 15)
 ```
+
+
+
+
+QQPLOT
+```{r fig.width = 5, fig.height = 5}
+IEPS_Completo_Regiao_SP %>% 
+  filter(ano == ymd("2020-01-01")) %>%
+  drop_na(valor) %>% 
+  group_by(variavel) %>% 
+  mutate(valor = if_else(str_detect(variavel, "pop"), log10(valor), valor),
+         valor = if_else(!str_detect(variavel, "pop"), scale(valor), valor)) %>% 
+  filter(variavel == "cob_vac_bcg") %>% 
+  ggplot(mapping = aes(sample = valor)) +
+    stat_qq_band() +
+    stat_qq_line() +
+    stat_qq_point(fill = "black",
+                  color = "black") +
+    labs(x = "Theoretical Quantiles", y = "Sample Quantiles")
+```
+
+
 
