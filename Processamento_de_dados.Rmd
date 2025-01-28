@@ -220,12 +220,25 @@ MS_municipios_2023 = MS_municipios_2023 %>%
 
 MS_municipios_2023_2024 = MS_municipios_2023 %>% 
   bind_rows(MS_municipios_2024) %>% 
-  rename(municipio = 'Município Residência') 
+  rename(municipio = 'Município Residência') %>% 
+  separate(municipio, into = c("codigo_municipio", "nome_municipio_original"), sep = " - ")
+  
+
+MS_municipios_2023_2024 %>% 
+  saveRDS(here("dados_processados", "MS_municipios_2023_2024.rds"))
 
 
-sipni_cobertura_municipios_1994_2024 = MS_municipios_2023_2024 %>% 
-  separate(municipio, into = c("codigo_municipio", "nome_municipio_original"), sep = " - ") %>% 
-  inner_join(sipni_cobertura_municipios_1994_2023, by = "codigo_municipio")
+MS_municipios_2023_2024 = sipni_cobertura_municipios_2023_2024 %>% 
+  inner_join(sipni_cobertura_municipios_1994_2023 %>% 
+               ungroup() %>% 
+              select(codigo_municipio, uf) %>% 
+               distinct(), 
+             by = "codigo_municipio") 
+
+sipni_cobertura_municipios_1994_2024 = sipni_cobertura_municipios_1994_2023 %>% 
+  bind_rows(MS_municipios_2023_2024)
+
+sipni_cobertura_municipios_1994_2024
 ```
 
 
