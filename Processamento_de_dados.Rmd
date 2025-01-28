@@ -181,6 +181,54 @@ write_csv(municipios, file = here("dados_processados", "sipni_cobertura_municipi
 ```
 
 
+Adicionando 2023 e 2024
+```{r}
+
+#2024
+
+MS_municipios_2024 <- read_delim(here("dados_brutos", "Ministerio da saude 2023 a 2024", "MS_municipios_2024.csv"), 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+MS_municipios_2024 = MS_municipios_2024 %>% 
+  drop_na('Município Residência') %>% 
+  filter(`Município Residência` != "Totais") %>% 
+  pivot_longer(cols = BCG:Varicela,
+               names_to =  "imuno",
+               values_to = "cobertura") %>% 
+  mutate(cobertura = str_remove(cobertura, "%"),
+         cobertura = str_replace(cobertura, ",", "."),
+         cobertura = as.double(cobertura),
+         ano = 2024)
+
+MS_municipios_2024
+
+#2023
+
+MS_municipios_2023 <- read_delim(here("dados_brutos", "Ministerio da saude 2023 a 2024", "MS_municipios_2023.csv"), 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+MS_municipios_2023 = MS_municipios_2023 %>% 
+  drop_na('Município Residência') %>% 
+  filter(`Município Residência` != "Totais") %>% 
+  pivot_longer(cols = BCG:Varicela,
+               names_to =  "imuno",
+               values_to = "cobertura") %>% 
+  mutate(cobertura = str_remove(cobertura, "%"),
+         cobertura = str_replace(cobertura, ",", "."),
+         cobertura = as.double(cobertura),
+         ano = 2023)
+
+MS_municipios_2023_2024 = MS_municipios_2023 %>% 
+  bind_rows(MS_municipios_2024) %>% 
+  rename(municipio = 'Município Residência') 
+
+
+sipni_cobertura_municipios_1994_2024 = MS_municipios_2023_2024 %>% 
+  separate(municipio, into = c("codigo_municipio", "nome_municipio_original"), sep = " - ") %>% 
+  inner_join(sipni_cobertura_municipios_1994_2023, by = "codigo_municipio")
+```
+
+
 #Análise de dados
 
 Os dados das populações foram obtidos dos anos 2000 a
