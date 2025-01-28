@@ -169,7 +169,8 @@ municipios_nomes = sipni_cobertura_municipios_1994_2023_2 %>%
   left_join(dtb_municipios_cod %>% 
               mutate(codigo = str_sub(codigo, 1, 6)),
             by = join_by("nome", "codigo")) %>% 
-  select(nome, nome_municipio_original, uf, codigo_municipio = codigo, ano, imuno, cobertura, codigo_uf, mun_uf)
+  select(nome, nome_municipio_original, uf, codigo_municipio = codigo, ano, imuno, cobertura, codigo_uf, mun_uf) %>% 
+  distinct()
 
 #Salvar
 saveRDS(municipios, file = here("dados_processados", "sipni_cobertura_municipios_1994_2023.rds") )
