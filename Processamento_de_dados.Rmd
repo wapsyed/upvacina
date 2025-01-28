@@ -172,14 +172,14 @@ municipios_nomes = sipni_cobertura_municipios_1994_2023_2 %>%
   select(nome, nome_municipio_original, uf, codigo_municipio = codigo, ano, imuno, cobertura, codigo_uf, mun_uf) %>% 
   distinct()
 
+municipios = municipios_nomes
+
 #Salvar
-saveRDS(municipios, file = here("dados_processados", "sipni_cobertura_municipios_1994_2023.rds") )
-  
-municipios_nomes %>% 
-  filter(nome_municipio_original == "São Vicente",
-         # uf == "São Paulo",
-         imuno == "BCG")
+saveRDS(municipios, file = here("dados_processados", "sipni_cobertura_municipios_1994_2023.rds"))
+
+write_csv(municipios, file = here("dados_processados", "sipni_cobertura_municipios_1994_2023.csv"))
 ```
+
 
 #Análise de dados
 
