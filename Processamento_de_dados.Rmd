@@ -16,7 +16,6 @@ knitr::opts_chunk$set(dpi=600,fig.width=5)
 # install.packages("qqplotr")
 # install.packages("writexl")
 # devtools::install_github('Mikata-Project/ggthemr')
-devtools::install_github('bbc/bbplot')
 
 
 library(tidyverse)
@@ -35,7 +34,6 @@ library(gghighlight)
 library(ggsci)
 library(patchwork)
 library(qqplotr)
-library(bbplot)
 
 ```
 
@@ -84,8 +82,8 @@ Dados de municípios
 
 ```{r}
 #Listar tabelas
-lista_MU_cobertura = list.files() 
-arquivos_xlsx <- list.files(here(), pattern = "\\.xlsx$", full.names = F)
+
+arquivos_xlsx <- list.files(here("dados_brutos", "SIPNI Cobertura Municipios"), pattern = "\\.xlsx$", full.names = T)
 
 #Criar função
 read_xl_sipni_municipio <- function(arquivo) {
@@ -112,6 +110,12 @@ read_xl_sipni_municipio <- function(arquivo) {
 sipni_cobertura_municipios_1994_2023 <- lapply(arquivos_xlsx, read_xl_sipni_municipio) %>%
   bind_rows()
 
+
+sipni_cobertura_municipios_1994_2023 %>% 
+  filter(ano == 1994,
+         imuno == "BCG") %>% 
+  View()
+
 #Salvar
 saveRDS(sipni_cobertura_municipios_1994_2023, 
           file = "sipni_cobertura_municipios_1994_2023.rds")
@@ -128,14 +132,13 @@ sipni_cobertura_uf_1994_2023_2 = sipni_cobertura_uf_1994_2023 %>%
          nome = stri_trans_general(nome, "Latin-ASCII")) %>% 
   select(nome, uf, ano, imuno, cobertura, mun_uf)
 
-saveRDS(sipni_cobertura_uf_1994_2023_2, file = "sipni_cobertura_uf_1994_2023_2.rds")
+saveRDS(sipni_cobertura_uf_1994_2023_2, file = here("dados_processados", "sipni_cobertura_uf_1994_2023_2.rds"))
 
 #Municípios
 sipni_cobertura_municipios_1994_2023_2 = sipni_cobertura_municipios_1994_2023 %>% 
  mutate(codigo = as.character(str_extract(municipio, "\\d+")),# Extrair números
-        nome = str_remove(municipio, "\\d+ "),# Extrair texto
-        mun_uf = "Município" ) %>% 
-  select(!"...1":municipio)
+        nome = str_remove(municipio, "\\d+ "), # Extrair texto
+        mun_uf = "Município" ) 
 
 glimpse(sipni_cobertura_municipios_1994_2023_2)
 
@@ -149,6 +152,10 @@ glimpse(sipni_cobertura_municipios_1994_2023_2)
 
 ```{r}
 #Anotações de cidades. Fonte: IBGE. https://www.ibge.gov.br/explica/codigos-dos-municipios.php
+
+RELATORIO_DTB_BRASIL_MUNICIPIO <- read_excel("dados_brutos/DTB_2022_codigomunicipios/RELATORIO_DTB_BRASIL_MUNICIPIO.xls", 
+    skip = 4)
+
 dtb_municipios_cod = RELATORIO_DTB_BRASIL_MUNICIPIO %>% 
   clean_names() %>% 
   select(codigo_uf = uf, uf = nome_uf, codigo = codigo_municipio_completo, nome_municipio) %>% 
@@ -163,11 +170,13 @@ municipios = sipni_cobertura_municipios_1994_2023_2 %>%
   select(nome, nome_municipio_original, uf, codigo_municipio = codigo.y, ano, imuno, cobertura, codigo_uf, mun_uf)
 
 #Salvar
-saveRDS(municipios, file = "sipni_cobertura_municipios_1994_2023_2.rds")
+saveRDS(municipios, file = here("dados_processados", "sipni_cobertura_municipios_1994_2023.rds") )
   
 ```
 
-#Análise de dados Os dados das populações foram obtidos dos anos 2000 a
+#Análise de dados
+
+Os dados das populações foram obtidos dos anos 2000 a
 2022, pois os anos 2007 e 2023 não estavam disponíveis. Definir
 variáveis -
 <https://www.ibge.gov.br/estatisticas/downloads-estatisticas.html> -
