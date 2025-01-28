@@ -164,14 +164,20 @@ dtb_municipios_cod = RELATORIO_DTB_BRASIL_MUNICIPIO %>%
          nome = stri_trans_general(nome, "Latin-ASCII")) %>% 
   select(-nome_municipio)
 
-municipios = sipni_cobertura_municipios_1994_2023_2 %>% 
+municipios_nomes = sipni_cobertura_municipios_1994_2023_2 %>% 
   mutate(nome = gsub("\\\\", "", nome)) %>% 
-  left_join(dtb_municipios_cod, by = "nome") %>% 
-  select(nome, nome_municipio_original, uf, codigo_municipio = codigo.y, ano, imuno, cobertura, codigo_uf, mun_uf)
+  left_join(dtb_municipios_cod %>% 
+              mutate(codigo = str_sub(codigo, 1, 6)),
+            by = join_by("nome", "codigo")) %>% 
+  select(nome, nome_municipio_original, uf, codigo_municipio = codigo, ano, imuno, cobertura, codigo_uf, mun_uf)
 
 #Salvar
 saveRDS(municipios, file = here("dados_processados", "sipni_cobertura_municipios_1994_2023.rds") )
   
+municipios_nomes %>% 
+  filter(nome_municipio_original == "São Vicente",
+         # uf == "São Paulo",
+         imuno == "BCG")
 ```
 
 #Análise de dados
