@@ -1,0 +1,2 @@
+**Dados da União Pró-Vacina**
+Os dados compilados incluem dados das bases TabNet (1994-2022) e do Ministério da Saúde (2023-2024, [link]([url](https://infoms.saude.gov.br/extensions/SEIDIGI_DEMAS_VACINACAO_CALENDARIO_NACIONAL_COBERTURA_RESIDENCIA/SEIDIGI_DEMAS_VACINACAO_CALENDARIO_NACIONAL_COBERTURA_RESIDENCIA.html))). O processamento e análise dos dados podem ser encontradas no arquivo "Processamento_de_dados.rmd". As tabelas-fonte estão na pasta "dados_brutos" e as prontas para uso, na "dados_processados".
