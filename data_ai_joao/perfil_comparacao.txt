@@ -1,0 +1,139 @@
+== COLEGA (parquet) ==
+dim: 2328031 x 9 | anos: 1994-2025 
+municipios: 5569 | UFs: 27 
+linhas por ano:
+
+  1994   1995   1996   1997   1998   1999   2000   2001   2002   2003   2004 
+ 32869  38416  38416  38416  38416  43981  43981  43981  49546  49546  38443 
+  2005   2006   2007   2008   2009   2010   2011   2012   2013   2014   2015 
+ 38443  44008  44008  44008  44008  55138  55138  60356  94672 111379 105810 
+  2016   2017   2018   2019   2020   2021   2022   2023   2024   2025 
+111379 116948 116948 116948 116948 116948 116948 122518 122518 116949 
+
+combinacoes vacina x dose:
+                            vacina       dose              vacina_codigo
+                               BCG Dose única                        bcg
+                               DTP    1ª dose                        dtp
+                               DTP 1º reforço                        dtp
+                               DTP 2º reforço                        dtp
+ DTP (reforço – série alternativa) Dose única                dtp_ref_alt
+    Dupla adulto e dTpa (gestante) Dose única dupla_adulto_dtpa_gestante
+                     Febre Amarela    1ª dose              febre_amarela
+                     Febre Amarela 1º reforço              febre_amarela
+    Haemophilus influenzae b (Hib) Dose única                        hib
+               Hepatite A Infantil Dose única                 hepatite_a
+            Hepatite B (até 1 dia) Dose única            hepatite_b_1dia
+           Hepatite B (até 2 dias) Dose única           hepatite_b_2dias
+          Hepatite B (até 30 dias) Dose única          hepatite_b_30dias
+     Hepatite B (menores de 1 ano) Dose única    hepatite_b_menores_1ano
+           Meningocócica Conjugada    1ª dose                  meningo_c
+           Meningocócica Conjugada 1º reforço                  meningo_c
+              Penta (DTP/HepB/Hib) Dose única                      penta
+            Pneumocócica Conjugada    1ª dose                     pneumo
+            Pneumocócica Conjugada 1º reforço                     pneumo
+                      Poliomielite    1ª dose               poliomielite
+                      Poliomielite 1º reforço               poliomielite
+                      Poliomielite 2º reforço               poliomielite
+                         Rotavírus Dose única                  rotavirus
+             Sarampo (monovalente) Dose única        sarampo_monovalente
+                       Tetra Viral Dose única                tetra_viral
+            Tetravalente (DTP/Hib) Dose única       tetravalente_dtp_hib
+                    Tríplice Viral    1ª dose             triplice_viral
+                    Tríplice Viral    2ª dose             triplice_viral
+                          Varicela    1ª dose                   varicela
+                          Varicela    2ª dose                   varicela
+                   dTpa (gestante) Dose única              dtpa_gestante
+
+meta_pni por vacina:
+                            vacina meta_pni
+                               BCG       90
+                               DTP       95
+ DTP (reforço – série alternativa)       NA
+    Dupla adulto e dTpa (gestante)       95
+                     Febre Amarela       95
+    Haemophilus influenzae b (Hib)       95
+               Hepatite A Infantil       95
+            Hepatite B (até 1 dia)       NA
+           Hepatite B (até 2 dias)       NA
+          Hepatite B (até 30 dias)       95
+     Hepatite B (menores de 1 ano)       95
+           Meningocócica Conjugada       95
+              Penta (DTP/HepB/Hib)       95
+            Pneumocócica Conjugada       95
+                      Poliomielite       95
+                         Rotavírus       90
+             Sarampo (monovalente)       95
+                       Tetra Viral       95
+            Tetravalente (DTP/Hib)       95
+                    Tríplice Viral       95
+                          Varicela       95
+                   dTpa (gestante)       95
+
+NAs cobertura: 0 | codigo: 0 
+
+
+== USUARIO (RDS municipal 1994-2024) ==
+dim: 2625144 x 10 | anos: 1994-2024 
+municipios: 5570 | UFs: 28 
+linhas por ano:
+
+  1994   1995   1996   1997   1998   1999   2000   2001   2002   2003   2004 
+ 16992  35532  37809  49500  49527  55050  55050  55120  61149  61138  50022 
+  2005   2006   2007   2008   2009   2010   2011   2012   2013   2014   2015 
+ 50058  55620  55620  55620  55620  66744  66756  72319 116823 133512 127995 
+  2016   2017   2018   2019   2020   2021   2022   2023   2024 
+133584 122496 122496 122496 128064 133632 133632 239376 105792 
+
+imuno:
+                                     imuno      n
+                                       BCG 171338
+                             Febre Amarela 171338
+                                Hepatite B 171338
+                              Poliomielite 160202
+                                     Total 160202
+                                       DTP 149066
+                        Tríplice Viral  D1 138926
+                                  Ignorado 121228
+                          Rotavírus Humano 100167
+            Tetravalente (DTP/Hib) (TETRA)  83430
+                             Meningococo C  77919
+                              Pneumocócica  77919
+                                     Penta  66794
+ Dupla adulto e tríplice acelular gestante  61231
+                    Meningococo C (1º ref)  61231
+                      Pneumocócica(1º ref)  61231
+                      Poliomielite(1º ref)  61231
+                       Tetra Viral(SRC+VZ)  61231
+          Tríplice Bacteriana(DTP)(1º ref)  61231
+                        Tríplice Viral  D2  61231
+                             dTpa gestante  61231
+                                Hepatite A  55668
+       Hepatite B  em crianças até 30 dias  55668
+                      DTP REF (4 e 6 anos)  50103
+                                   Sarampo  48915
+                  Haemophilus influenzae b  46791
+                       Poliomielite 4 anos  38974
+                                  Varicela  33406
+                          DTP (1° Reforço)  11136
+                       Hepatite A Infantil  11136
+                                 Meningo C  11136
+                    Meningo C (1° Reforço)  11136
+                      Penta (DTP/HepB/Hib)  11136
+                                 Pneumo 10  11136
+                    Pneumo 10 (1° Reforço)  11136
+                     Polio Injetável (VIP)  11136
+                      Polio Oral Bivalente  11136
+                                 Rotavírus  11136
+                  Tríplice Viral - 1° Dose  11136
+                  Tríplice Viral - 2° Dose  11136
+                    Hepatite B (< 30 Dias)   5568
+                    Hepatite B (< 30 dias)   5568
+                               dTpa Adulto   5568
+                   dTpa Adulto - Gestantes   5568
+
+mun_uf:
+
+Município      <NA> 
+  2413560    211584 
+
+NAs cobertura: 6 
